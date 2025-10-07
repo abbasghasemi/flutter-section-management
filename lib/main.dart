@@ -3,58 +3,65 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:section_management/persian_localizations.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
+import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/screens/login_screen.dart';
-import 'package:section_management/services/database_service.dart';
-import 'package:section_management/theme.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   await WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService.instance.open();
-  final prefs = await SharedPreferences.getInstance();
-  final password = prefs.getString('password') ?? '1234';
-  runApp(Application(password: password));
+  final appProvider = AppProvider();
+  await appProvider.open();
+  runApp(Application(appProvider: appProvider));
   doWhenWindowReady(() {
     final win = appWindow;
     const initialSize = Size(1280, 720);
     win.minSize = initialSize;
     win.size = initialSize;
     win.alignment = Alignment.center;
-    win.title = "Section management";
+    win.title = "مدیریت نیروها";
     win.show();
     FilePicker.platform = FilePickerWindows();
   });
 }
 
 class Application extends StatelessWidget {
-  final String password;
+  final AppProvider appProvider;
 
-  const Application({super.key, required this.password});
+  const Application({super.key, required this.appProvider});
 
   @override
   Widget build(BuildContext context) {
+    final appTheme = AppThemeProvider();
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider<AppProvider>.value(value: appProvider),
         ChangeNotifierProvider(create: (_) => AppRestartProvider()),
+        ChangeNotifierProvider<AppThemeProvider>.value(value: appTheme),
       ],
-      child: WindowBorder(
-        color: DarkTheme.backgroundColorActivated,
-        width: 1,
-        child: CupertinoApp(
-          title: '',
-          theme: DarkTheme.theme,
-          home: LoginScreen(correctPassword: password),
-          localizationsDelegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('fa', 'IR')],
-          locale: const Locale('fa', 'IR'),
-        ),
+      child: ListenableBuilder(
+        listenable: appTheme,
+        builder: (context, child) {
+          final theme = appTheme.theme;
+          return WindowBorder(
+            color: AppThemeProvider.backgroundColorActivated,
+            width: 1,
+            child: CupertinoApp(
+              title: '',
+              theme: theme,
+              home: LoginScreen(),
+              localizationsDelegates: [
+                PersianLocalizationsDelegate(),
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('fa', 'IR')],
+              locale: const Locale('fa', 'IR'),
+            ),
+          );
+        }
       ),
     );
   }

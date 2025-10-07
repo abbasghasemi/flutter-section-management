@@ -6,7 +6,7 @@ import 'package:section_management/models/state.dart' as model;
 import 'package:section_management/models/unit.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
-import 'package:section_management/theme.dart';
+import 'package:section_management/providers/app_theme.dart';
 
 class StatesScreen extends StatelessWidget {
   const StatesScreen({super.key});
@@ -43,11 +43,11 @@ class StatesScreen extends StatelessWidget {
                   final state = states[index];
                   final unit = appProvider.units.firstWhere(
                     (u) => u.id == state.unitId,
-                    orElse: () => Unit(id: 0, name: 'نامشخص'),
+                    orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 0),
                   );
                   return CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('${state.name} (${state.stateType.fa})'),
                     subtitle: Text('${unit.name}'),
                     leadingSize: 20,
@@ -221,7 +221,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
                     value!.isEmpty ? 'نام مکان الزامی است' : null,
               ),
               CupertinoListTile(
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
                 title: const Text('فعال'),
                 trailing: CupertinoSwitch(
                   value: _isActive,
@@ -229,7 +229,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
                 title: const Text('مسلح'),
                 trailing: CupertinoSwitch(
                   value: _isArmed,
@@ -237,7 +237,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
                 title: Text('مسئولیت: ${_stateType.fa}'),
                 trailing: CupertinoButton(
                   child: const Text('انتخاب مسئولیت'),
@@ -266,9 +266,9 @@ class _StateFormScreenState extends State<StateFormScreen> {
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
                 title: Text(
-                    'واحد: ${units.firstWhere((u) => u.id == _unitId, orElse: () => Unit(id: 0, name: 'نامشخص')).name}'),
+                    'واحد: ${units.firstWhere((u) => u.id == _unitId, orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 0)).name}'),
                 trailing: CupertinoButton(
                   child: const Text('انتخاب واحد'),
                   onPressed: () async {

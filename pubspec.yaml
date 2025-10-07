@@ -1,6 +1,6 @@
 name: section_management
 description: A Flutter application for managing sections.
-version: 1.1.0
+version: 1.2.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -21,11 +21,12 @@ dependencies:
   persian_datetime_picker: ^3.1.0
   bitsdojo_window: ^0.1.6
   file_picker: ^10.3.2
-  inno_bundle: ^0.9.0
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  inno_bundle: ^0.11.2
 
 flutter:
   uses-material-design: true

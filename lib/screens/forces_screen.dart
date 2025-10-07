@@ -12,7 +12,7 @@ import 'package:section_management/models/state.dart' as model;
 import 'package:section_management/models/unit.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
-import 'package:section_management/theme.dart';
+import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/utility.dart';
 
 class ForcesScreen extends StatefulWidget {
@@ -108,7 +108,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         transitionBetweenRoutes: true,
-        backgroundColor: DarkTheme.backgroundColor,
+        backgroundColor: AppThemeProvider.backgroundColor,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -160,16 +160,17 @@ class _ForcesScreenState extends State<ForcesScreen> {
             Container(
               decoration: BoxDecoration(
                 border: _sidebarFilterOpened
-                    ? Border(left: BorderSide(color: DarkTheme.toolbarColor))
+                    ? Border(
+                        left: BorderSide(color: AppThemeProvider.toolbarColor))
                     : null,
-                color: DarkTheme.backgroundColor,
+                color: AppThemeProvider.backgroundColor,
               ),
               child: AnimatedSize(
                 duration: const Duration(milliseconds: 110),
                 child: _sidebarFilterOpened
                     ? Container(
                         width: 200,
-                        color: DarkTheme.backgroundColor,
+                        color: AppThemeProvider.backgroundColor,
                         child: Column(
                           children: [
                             const Divider(),
@@ -178,13 +179,15 @@ class _ForcesScreenState extends State<ForcesScreen> {
                               builder: (context, unitId, _) =>
                                   CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text(
                                   unitId == null
                                       ? 'واحد: همه'
-                                      : 'واحد: ${units.firstWhere((u) => u.id == unitId, orElse: () => Unit(id: 0, name: 'نامشخص')).name}',
+                                      : 'واحد: ${units.firstWhere((u) => u.id == unitId, orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 0)).name}',
                                   style: theme.textTheme.actionSmallTextStyle
-                                      .apply(color: Colors.white),
+                                      .apply(
+                                          color:
+                                              AppThemeProvider.textTitleColor),
                                 ),
                                 onTap: () async {
                                   final newUnitId =
@@ -226,11 +229,13 @@ class _ForcesScreenState extends State<ForcesScreen> {
                               builder: (context, canArmed, _) =>
                                   CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text(
                                   'مسلح: ${canArmed == null ? 'همه' : canArmed ? 'بله' : 'خیر'}',
                                   style: theme.textTheme.actionSmallTextStyle
-                                      .apply(color: Colors.white),
+                                      .apply(
+                                          color:
+                                              AppThemeProvider.textTitleColor),
                                 ),
                                 onTap: () async {
                                   final newCanArmed =
@@ -276,11 +281,13 @@ class _ForcesScreenState extends State<ForcesScreen> {
                               builder: (context, endDate, _) =>
                                   CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text(
                                   'پایان خدمت: ${endDate == null ? '-' : timestampToShamsi(endDate)}',
                                   style: theme.textTheme.actionSmallTextStyle
-                                      .apply(color: Colors.white),
+                                      .apply(
+                                          color:
+                                              AppThemeProvider.textTitleColor),
                                 ),
                                 onTap: () async {
                                   final date = await showPersianDatePicker(
@@ -307,11 +314,13 @@ class _ForcesScreenState extends State<ForcesScreen> {
                               builder: (context, leaveType, _) =>
                                   CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text(
                                   'نوع مرخصی: ${leaveType == null ? 'همه' : leaveType.fa}',
                                   style: theme.textTheme.actionSmallTextStyle
-                                      .apply(color: Colors.white),
+                                      .apply(
+                                          color:
+                                              AppThemeProvider.textTitleColor),
                                 ),
                                 onTap: () async {
                                   final newLeaveType =
@@ -357,7 +366,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                 builder: (context, leaveDate, _) =>
                                     CupertinoListTile(
                                   backgroundColorActivated:
-                                      DarkTheme.backgroundColorActivated,
+                                      AppThemeProvider.backgroundColorActivated,
                                   title: Text(
                                     leaveDate != null
                                         ? timestampToShamsi(leaveDate)
@@ -366,7 +375,8 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                         .apply(
                                             color: leaveType == null
                                                 ? Colors.grey
-                                                : Colors.white),
+                                                : AppThemeProvider
+                                                    .textTitleColor),
                                   ),
                                   onTap: leaveType == null
                                       ? null
@@ -401,7 +411,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
                               builder: (context, present, _) =>
                                   CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -410,7 +420,9 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                       'حاضرین',
                                       style: theme
                                           .textTheme.actionSmallTextStyle
-                                          .apply(color: Colors.white),
+                                          .apply(
+                                              color: AppThemeProvider
+                                                  .textTitleColor),
                                     ),
                                     SizedBox(
                                       width: 20,
@@ -455,7 +467,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
                         const EdgeInsets.only(left: 8.0, right: 8, bottom: 10),
                     child: CupertinoSearchTextField(
                       decoration: BoxDecoration(
-                          color: DarkTheme.backgroundColorDeActivated),
+                          color: AppThemeProvider.backgroundColorDeActivated),
                       placeholder: 'جستجو بر اساس کد ملی یا نام',
                       onChanged: (value) {
                         setState(() {
@@ -496,8 +508,8 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                     final force = _filteredForces[index];
                                     return CupertinoListTile(
                                       leadingToTitle: 5,
-                                      backgroundColorActivated:
-                                          DarkTheme.backgroundColorActivated,
+                                      backgroundColorActivated: AppThemeProvider
+                                          .backgroundColorActivated,
                                       padding: EdgeInsets.zero,
                                       leading: Text('${index + 1}'),
                                       title: Text(
@@ -509,13 +521,35 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                         children: [
                                           FutureBuilder(
                                             future: appProvider
-                                                .getPostsCountByForceId(
-                                                    force.id!),
+                                                .getForceInfo(force.id!),
                                             builder: (context, snap) {
                                               if (!snap.hasData) {
                                                 return CupertinoActivityIndicator();
                                               }
-                                              return Text("${snap.data} پست");
+                                              final leave =
+                                                  snap.data!['lastDateLeave'] ==
+                                                          0
+                                                      ? force.createdDate
+                                                      : snap.data![
+                                                          'lastDateLeave']!;
+                                              final days = Jalali
+                                                      .fromMillisecondsSinceEpoch(
+                                                          leave * 1000)
+                                                  .distanceTo(Jalali.now());
+                                              return Column(
+                                                children: [
+                                                  Text(
+                                                    "${snap.data!['postsCount']} پست",
+                                                    style: theme.textTheme
+                                                        .actionSmallTextStyle,
+                                                  ),
+                                                  Text(
+                                                    "${days} روز",
+                                                    style: theme.textTheme
+                                                        .actionSmallTextStyle,
+                                                  ),
+                                                ],
+                                              );
                                             },
                                           ),
                                           Padding(
@@ -658,55 +692,77 @@ class ForceDetailScreen extends StatelessWidget {
             CupertinoListSection(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  color: DarkTheme.backgroundColorDeActivated),
-              backgroundColor: DarkTheme.backgroundColor,
+                  color: AppThemeProvider.backgroundColorDeActivated),
+              backgroundColor: AppThemeProvider.backgroundColor,
               header: const Text('اطلاعات نیرو'),
               children: [
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('کد ملی: ${force.codeMeli}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('نام: ${force.firstName}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('نام خانوادگی: ${force.lastName}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('نام پدر: ${force.fatherName}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('بومی: ${force.isNative ? 'بله' : 'خیر'}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
+                    title: Text('تاهل: ${force.isMarried ? 'متاهل' : 'مجرد'}')),
+                CupertinoListTile(
+                    backgroundColorActivated:
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('مسلح: ${force.canArmed ? 'بله' : 'خیر'}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('واحد: ${force.unitName}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('مسئولیت: ${force.stateType.fa}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('روزهای استراحت: $daysOffText')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text('شماره تلفن: ${force.phoneNo}')),
                 CupertinoListTile(
                     backgroundColorActivated:
-                        DarkTheme.backgroundColorActivated,
+                        AppThemeProvider.backgroundColorActivated,
                     title: Text(
                         'پایان خدمت: ${timestampToShamsi(force.endDate)}')),
+                FutureBuilder(
+                    future: appProvider.getLastDateLeave(force.id!),
+                    builder: (context, snap) {
+                      if (!snap.hasData) {
+                        return Container();
+                      }
+                      final leave =
+                          snap.data == 0 ? force.createdDate : snap.data!;
+                      final days =
+                          Jalali.fromMillisecondsSinceEpoch(leave * 1000)
+                              .distanceTo(Jalali.now());
+                      final value =
+                          (days / 30) * appProvider.getMultiplierOfTheMonth();
+                      return CupertinoListTile(
+                          backgroundColorActivated:
+                              AppThemeProvider.backgroundColorActivated,
+                          title: Text('استحقاق: ${value.toStringAsFixed(2)}'));
+                    }),
               ],
             ),
             FutureBuilder(
@@ -716,14 +772,14 @@ class ForceDetailScreen extends StatelessWidget {
                   final leaves = data.data!;
                   return CupertinoListSection(
                     decoration: BoxDecoration(
-                        color: DarkTheme.backgroundColorDeActivated),
-                    backgroundColor: DarkTheme.backgroundColor,
+                        color: AppThemeProvider.backgroundColorDeActivated),
+                    backgroundColor: AppThemeProvider.backgroundColor,
                     header: const Text('مرخصی‌ها/غیبت‌ها'),
                     children: leaves.isEmpty
                         ? [
                             CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text('موری موجود نیست'))
                           ]
                         : leaves.map((leave) {
@@ -735,7 +791,7 @@ class ForceDetailScreen extends StatelessWidget {
                                 : 'بدون جزئیات';
                             return CupertinoListTile(
                               backgroundColorActivated:
-                                  DarkTheme.backgroundColorActivated,
+                                  AppThemeProvider.backgroundColorActivated,
                               title: Text('${leave.leaveType.fa}'),
                               subtitle: Text(
                                 'از ${timestampToShamsi(leave.fromDate)} '
@@ -766,26 +822,43 @@ class ForceDetailScreen extends StatelessWidget {
                   final notes = data.data!;
                   return CupertinoListSection(
                     decoration: BoxDecoration(
-                        color: DarkTheme.backgroundColorDeActivated),
-                    backgroundColor: DarkTheme.backgroundColor,
+                        color: AppThemeProvider.backgroundColorDeActivated),
+                    backgroundColor: AppThemeProvider.backgroundColor,
                     header: const Text('یادداشت‌ها'),
                     children: notes.isEmpty
                         ? [
                             CupertinoListTile(
                                 backgroundColorActivated:
-                                    DarkTheme.backgroundColorActivated,
+                                    AppThemeProvider.backgroundColorActivated,
                                 title: Text('یادداشتی موجود نیست'))
                           ]
                         : notes
                             .map((note) => CupertinoListTile(
+                                  onTap: () {
+                                    showCupertinoDialog(
+                                    context: context,
+                                    builder: (context) => CupertinoAlertDialog(
+                                      title: Text(timestampToShamsi(note.noteDate)),
+                                      content: Text(note.note),
+                                      actions: [
+                                        CupertinoDialogAction(
+                                          child: Text('بستن'),
+                                          onPressed: () => Navigator.pop(context, false),
+                                        ),
+                                      ],
+                                    ),
+                                    );
+                                  },
                                   backgroundColorActivated:
-                                      DarkTheme.backgroundColorActivated,
+                                      AppThemeProvider.backgroundColorActivated,
                                   title: Text(
                                     note.note.replaceAll("\n", ' '),
                                     style: CupertinoTheme.of(context)
                                         .textTheme
                                         .actionSmallTextStyle
-                                        .apply(color: Colors.white),
+                                        .apply(
+                                            color: AppThemeProvider
+                                                .textTitleColor),
                                   ),
                                   subtitle:
                                       Text(timestampToShamsi(note.noteDate)),
@@ -806,16 +879,16 @@ class ForceDetailScreen extends StatelessWidget {
                   final posts = data.data!;
                   return CupertinoListSection(
                     decoration: BoxDecoration(
-                        color: DarkTheme.backgroundColorDeActivated),
-                    backgroundColor: DarkTheme.backgroundColor,
+                        color: AppThemeProvider.backgroundColorDeActivated),
+                    backgroundColor: AppThemeProvider.backgroundColor,
                     header: Text('پست‌ها (${posts.length})'),
                     children: [
                       Column(
                         children: posts.isEmpty
                             ? [
                                 CupertinoListTile(
-                                    backgroundColorActivated:
-                                        DarkTheme.backgroundColorActivated,
+                                    backgroundColorActivated: AppThemeProvider
+                                        .backgroundColorActivated,
                                     title: Text('پستی موجود نیست'))
                               ]
                             : posts.map((post) {
@@ -832,7 +905,7 @@ class ForceDetailScreen extends StatelessWidget {
                                 );
                                 return CupertinoListTile(
                                   backgroundColorActivated:
-                                      DarkTheme.backgroundColorActivated,
+                                      AppThemeProvider.backgroundColorActivated,
                                   title: Text(
                                       '${state.name} - پست ${post.postNo}'),
                                   subtitle:
@@ -895,6 +968,8 @@ class _ForceLeaveFormScreenState extends State<ForceLeaveFormScreen> {
   List<Enum> _getDetailsType() {
     if (_leaveType.value == LeaveType.presence) {
       return PresenceType.values;
+    } else if (_leaveType.value == LeaveType.mission) {
+      return MissionType.values;
     } else if (_leaveType.value == LeaveType.sick) {
       return SickType.values;
     } else {
@@ -1227,7 +1302,9 @@ class _ForceLeaveFormScreenState extends State<ForceLeaveFormScreen> {
     if (_leaveType.value == LeaveType.presence && length >= 4) {
       return false;
     }
-    if (_leaveType.value == LeaveType.sick && length >= 2) {
+    if ((_leaveType.value == LeaveType.sick ||
+            _leaveType.value == LeaveType.mission) &&
+        length >= 2) {
       return false;
     }
     if (length >= 3 && _leaveType.value != LeaveType.presence) {
@@ -1254,6 +1331,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
   late TextEditingController _fatherNameController;
   late TextEditingController _phoneNoController;
   late bool _isNative;
+  late bool _isMarried;
   late int _endDate;
   late bool _canArmed;
   late int _unitId;
@@ -1274,8 +1352,9 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
     _phoneNoController =
         TextEditingController(text: widget.force?.phoneNo.toString() ?? '');
     _isNative = widget.force?.isNative ?? false;
+    _isMarried = widget.force?.isMarried ?? false;
     _endDate = widget.force?.endDate ?? dateTimestamp();
-    _canArmed = widget.force?.canArmed ?? false;
+    _canArmed = widget.force?.canArmed ?? true;
     _unitId = widget.force?.unitId ?? 1;
     _daysOff = widget.force?.daysOff ?? 1;
     _stateType = widget.force?.stateType ?? StateType.post;
@@ -1385,7 +1464,8 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
               ),
               CupertinoListTile(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text('بومی: ${_isNative ? 'بله' : 'خیر'}'),
                 trailing: CupertinoSwitch(
                   value: _isNative,
@@ -1394,7 +1474,18 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
               ),
               CupertinoListTile(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
+                title: Text('تاهل: ${_isMarried ? 'متاهل' : 'مجرد'}'),
+                trailing: CupertinoSwitch(
+                  value: _isMarried,
+                  onChanged: (value) => setState(() => _isMarried = value),
+                ),
+              ),
+              CupertinoListTile(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text('مسلح: ${_canArmed ? 'بله' : 'خیر'}'),
                 trailing: CupertinoSwitch(
                   value: _canArmed,
@@ -1403,7 +1494,8 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
               ),
               CupertinoListTile(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text('پایان خدمت: ${timestampToShamsi(_endDate)}'),
                 trailing: CupertinoButton(
                   child: const Text('انتخاب تاریخ'),
@@ -1423,9 +1515,10 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
               ),
               CupertinoListTile(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text(
-                    'واحد: ${units.firstWhere((u) => u.id == _unitId, orElse: () => Unit(id: 0, name: 'نامشخص')).name}'),
+                    'واحد: ${units.firstWhere((u) => u.id == _unitId, orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 1)).name}'),
                 trailing: CupertinoButton(
                   child: const Text('انتخاب واحد'),
                   onPressed: () async {
@@ -1454,7 +1547,8 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
               ),
               CupertinoListTile(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                backgroundColorActivated: DarkTheme.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text('مسئولیت: ${_stateType.fa}'),
                 trailing: CupertinoButton(
                   child: const Text('انتخاب مسئولیت'),
@@ -1495,6 +1589,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
                         lastName: _lastNameController.text,
                         fatherName: _fatherNameController.text,
                         isNative: _isNative,
+                        isMarried: _isMarried,
                         endDate: _endDate,
                         createdDate:
                             widget.force?.createdDate ?? dateTimestamp(),

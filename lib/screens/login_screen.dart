@@ -1,13 +1,14 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:section_management/providers/app_provider.dart';
+import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/screens/home_screen.dart';
-import 'package:section_management/theme.dart';
 
 class LoginScreen extends StatefulWidget {
-  final String correctPassword;
 
-  const LoginScreen({super.key, required this.correctPassword});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -23,9 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: EdgeInsetsDirectional.zero,
         leading: CloseWindowButton(
           colors: WindowButtonColors(
-              iconNormal: Colors.white,
-              mouseDown: Colors.red,
-              mouseOver: DarkTheme.backgroundColorActivated),
+            mouseOver: Colors.red,
+            mouseDown: Colors.redAccent,
+            iconNormal: AppThemeProvider.textTitleColor,
+            iconMouseOver: Colors.white,
+          ),
         ),
       ),
       child: Center(
@@ -42,12 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   autofocus: true,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(3),
-                      color: DarkTheme.backgroundColorDeActivated),
+                      color: AppThemeProvider.backgroundColorDeActivated),
                   onFieldSubmitted: (_) => _on_login_btn(),
                   keyboardType: TextInputType.number,
                   obscureText: true,
                   validator: (value) {
-                    if (value == widget.correctPassword) {
+                    if (value == context.read<AppProvider>().getPassword()) {
                       return null;
                     }
                     return 'رمز عبور اشتباه است';

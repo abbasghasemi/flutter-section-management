@@ -22,13 +22,15 @@ enum LeaveType implements FaName {
   presence,
   sick,
   absent,
-  detention;
+  detention,
+  mission;
 
   String get fa => switch (this) {
         presence => 'حضور',
         sick => 'استعلاجی',
         absent => 'غیبت',
         detention => 'بازداشت',
+        mission => 'ماموریت',
       };
 }
 
@@ -42,6 +44,16 @@ enum PresenceType implements FaName {
         merit => 'استحقاقی',
         persuasion => 'تشویقی',
         way => 'توراهی',
+        days_off => 'روزهای استراحت',
+      };
+}
+
+enum MissionType implements FaName {
+  mission,
+  days_off;
+
+  String get fa => switch (this) {
+        mission => 'ماموریت',
         days_off => 'روزهای استراحت',
       };
 }

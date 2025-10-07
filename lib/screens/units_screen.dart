@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:section_management/models/unit.dart';
 import 'package:section_management/providers/app_provider.dart';
@@ -43,6 +44,7 @@ class UnitsScreen extends StatelessWidget {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                       Text("نیروی قابل استفاده: ${ unit.maxUsage == -1 ? '♾️' : unit.maxUsage}"),
                         Tooltip(
                           message: 'ویرایش',
                           child: CupertinoButton(
@@ -146,6 +148,7 @@ class UnitFormScreen extends StatefulWidget {
 class _UnitFormScreenState extends State<UnitFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
+  late TextEditingController _maxUsageController;
   late AppRestartProvider _appRestart;
 
   void _restart() {
@@ -158,6 +161,8 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
     _appRestart = context.read<AppRestartProvider>();
     _appRestart.addListener(_restart);
     _nameController = TextEditingController(text: widget.unit?.name ?? '');
+    _maxUsageController =
+        TextEditingController(text: widget.unit?.maxUsage.toString() ?? '1');
   }
 
   @override
@@ -187,16 +192,44 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
                     value!.isEmpty ? 'نام واحد الزامی است' : null,
               ),
               const SizedBox(height: 20),
+              CupertinoTextFormFieldRow(
+                controller: _maxUsageController,
+                placeholder: 'حداکثر تعداد نیروی قابل استفاده',
+                maxLines: 1,
+                maxLength: 3,
+                keyboardType: TextInputType.numberWithOptions(signed: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[-0-9]'))
+                ],
+                decoration: BoxDecoration(
+                  border: Border.all(color: CupertinoColors.systemGrey),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'حداکثر تعداد استفاده الزامی است';
+                  }
+                  final _value = int.tryParse(value) ?? -2;
+                  if (_value <= -2) {
+                    return 'مقدار ورودی را بررسی کنید';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
               CupertinoButton.filled(
                 child: Text(widget.unit == null ? 'افزودن' : 'ذخیره'),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     try {
                       if (widget.unit == null) {
-                        appProvider.addUnit(_nameController.text);
+                        appProvider.addUnit(_nameController.text,
+                            int.parse(_maxUsageController.text));
                       } else {
                         appProvider.updateUnit(
-                            widget.unit!.id!, _nameController.text);
+                            widget.unit!.id!,
+                            _nameController.text,
+                            int.parse(_maxUsageController.text));
                       }
                       Navigator.pop(context);
                     } catch (e) {

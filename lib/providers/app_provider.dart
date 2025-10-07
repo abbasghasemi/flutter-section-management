@@ -9,6 +9,7 @@ import 'package:section_management/models/post.dart';
 import 'package:section_management/models/post_doc.dart';
 import 'package:section_management/models/state.dart';
 import 'package:section_management/models/unit.dart';
+import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/services/database_service.dart';
 import 'package:section_management/utility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,8 +21,14 @@ class AppProvider extends ChangeNotifier {
   int _driverCount = 2;
 
   int get driverCount => _driverCount;
+  static late SharedPreferences _prefs;
 
-  Future<void> open() async => DatabaseService.instance.open();
+  Future<void> open() async {
+    await DatabaseService.instance.open();
+    _prefs = await SharedPreferences.getInstance();
+    AppThemeProvider.light = isLightTheme();
+    await _init();
+  }
 
   Future<void> restart() async {
     _forces.clear();
@@ -32,14 +39,9 @@ class AppProvider extends ChangeNotifier {
 
   void close() => DatabaseService.instance.close();
 
-  AppProvider() {
-    _init().ignore();
-  }
-
   Future<void> setDriverCount(int count) async {
     _driverCount = count;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('driverCount', count);
+    await _prefs.setInt('driverCount', count);
     notifyListeners();
   }
 
@@ -57,8 +59,7 @@ class AppProvider extends ChangeNotifier {
     _units = await DatabaseService.instance.getAllUnits();
     _states = await DatabaseService.instance.getAllStates();
     _sortStates();
-    final prefs = await SharedPreferences.getInstance();
-    _driverCount = prefs.getInt('driverCount') ?? 2;
+    _driverCount = _prefs.getInt('driverCount') ?? 2;
   }
 
   Future<List<Force>> filterForces({
@@ -110,12 +111,13 @@ class AppProvider extends ChangeNotifier {
       lastName: newData.lastName,
       fatherName: newData.fatherName,
       isNative: newData.isNative,
+      isMarried: newData.isMarried,
       endDate: newData.endDate,
       createdDate: oldForce.createdDate,
       canArmed: newData.canArmed,
       unitId: newData.unitId,
+      unitName: _units.firstWhere((e) => e.id == newData.unitId).name,
       daysOff: newData.daysOff,
-      unitName: newData.unitName,
       phoneNo: newData.phoneNo,
       stateType: newData.stateType,
     );
@@ -156,6 +158,10 @@ class AppProvider extends ChangeNotifier {
         .where((l) => l.leaveType == LeaveType.detention)
         .map((l) => unitForces.firstWhere((s) => s.id == l.forceId))
         .toList();
+    final missionForces = leaves
+        .where((l) => l.leaveType == LeaveType.mission)
+        .map((l) => unitForces.firstWhere((s) => s.id == l.forceId))
+        .toList();
     final presentForces = unitForces.where((s) {
       return !leaves.any((l) => l.forceId == s.id);
       // final forceLeaves = leaves.where((l) => l.forceId == s.id);
@@ -169,6 +175,7 @@ class AppProvider extends ChangeNotifier {
       'sickForces': sickForces,
       'absentForces': absentForces,
       'detainedForces': detainedForces,
+      'missionForces': missionForces,
       'leaves': leaves,
     };
   }
@@ -234,15 +241,16 @@ class AppProvider extends ChangeNotifier {
     return DatabaseService.instance.getNotesByForceId(forceId);
   }
 
-  void addUnit(String name) {
-    final id = DatabaseService.instance.addUnit(name);
-    _units.add(Unit(name: name, id: id));
+  void addUnit(String name, int maxUsage) {
+    final id = DatabaseService.instance.addUnit(name, maxUsage);
+    _units.add(Unit(name: name, id: id, maxUsage: maxUsage));
     notifyListeners();
   }
 
-  void updateUnit(int id, String name) {
-    DatabaseService.instance.updateUnit(id, name);
-    _units[_units.indexWhere((u) => u.id == id)] = Unit(id: id, name: name);
+  void updateUnit(int id, String name, int maxUsage) {
+    DatabaseService.instance.updateUnit(id, name, maxUsage);
+    _units[_units.indexWhere((u) => u.id == id)] =
+        Unit(id: id, name: name, maxUsage: maxUsage);
     notifyListeners();
   }
 
@@ -335,6 +343,21 @@ class AppProvider extends ChangeNotifier {
     return DatabaseService.instance.getLastPostDate(forceId, dateTs);
   }
 
+  Future<int> getLastDateLeave(int forceId) {
+    return DatabaseService.instance.getLastDateLeave(forceId);
+  }
+
+  Future<Post?> getLastPost(int forceId) {
+    return DatabaseService.instance.getLastPost(forceId);
+  }
+
+  Future<Map<String, int>> getForceInfo(int forceId) async {
+    return {
+      "lastDateLeave": await getLastDateLeave(forceId),
+      "postsCount": await getPostsCountByForceId(forceId)
+    };
+  }
+
   Future<Map<String, dynamic>> generateProposal(int currentTs) async {
     List<Post> posts = [];
     List<PostDoc> postsDoc = [];
@@ -362,9 +385,33 @@ class AppProvider extends ChangeNotifier {
       }
       return true;
     }).toList();
-    availableForces.sort((a, b) => DatabaseService.instance
-        .getPostsCountByForceId(a.id!)
-        .compareTo(DatabaseService.instance.getPostsCountByForceId(b.id!)));
+
+    if (allowFilterMaxUsage()) {
+      List<Force> filteredForces = [];
+      Map<int, int> unitCounts = {};
+      for (var force in availableForces) {
+        final unit = _units.firstWhere((u) => u.id == force.unitId);
+        final currentCount = unitCounts[force.unitId] ?? 0;
+        if (unit.maxUsage < 0 || currentCount < unit.maxUsage) {
+          filteredForces.add(force);
+          unitCounts[force.unitId] = currentCount + 1;
+        }
+      }
+      availableForces = filteredForces;
+    }
+    final filterUnitPriority = allowFilterUnitPriority();
+    availableForces.sort((a, b) {
+      if (filterUnitPriority) {
+        bool aIsPriorityUnit = a.unitId == 1 || a.unitId == 2;
+        bool bIsPriorityUnit = b.unitId == 1 || b.unitId == 2;
+        if (aIsPriorityUnit && !bIsPriorityUnit) return -1;
+        if (!aIsPriorityUnit && bIsPriorityUnit) return 1;
+      }
+      return DatabaseService.instance
+          .getPostsCountByForceId(a.id!)
+          .compareTo(DatabaseService.instance.getPostsCountByForceId(b.id!));
+    });
+
     List<Map<String, int>> emptyPosts = [];
     for (var state in states.where((s) => s.isActive)) {
       List<Force> candidates = availableForces.where((f) {
@@ -428,7 +475,7 @@ class AppProvider extends ChangeNotifier {
       posts[empty['postsIndex']!].forceId = availableForces[i].id!;
       postsDoc[empty['postsDocIndex']!].forcesId[empty['forcesIdIndex']!] =
           availableForces[i].id!;
-      _validateAssignments(posts[empty['postsIndex']!], {}, currentTs);
+      _validateAssignments(posts[empty['postsIndex']!], {}, currentTs, true);
     }
     return {
       'posts': posts,
@@ -439,16 +486,38 @@ class AppProvider extends ChangeNotifier {
 
   int validateAssignments(List<Post> posts, int dateTs) {
     Map<int, int> forceAssignments = {};
+    Map<int, int> unitAssignments = {};
     int countOfWarning = 0;
     for (var post in posts) {
-      if (_validateAssignments(post, forceAssignments, dateTs))
-        countOfWarning++;
+      bool plusplus = true;
+      if (allowFilterMaxUsage()) {
+        Force? force = getForceById(post.forceId);
+        if (force != null) {
+          unitAssignments.update(force.unitId, (value) => value + 1,
+              ifAbsent: () => 1);
+          final unit = _units.firstWhere((u) => u.id == force.unitId);
+          if (unit.maxUsage >= 0 &&
+              unitAssignments[force.unitId]! > unit.maxUsage) {
+            post.warnings ??= [];
+            if (post.warnings!.isNotEmpty) post.warnings!.clear();
+            post.warnings!.add('بیش از حداکثر استفاده واحد ${unit.name}');
+            countOfWarning++;
+            plusplus = false;
+          }
+        }
+      }
+      if (_validateAssignments(post, forceAssignments, dateTs, plusplus) &&
+          plusplus) countOfWarning++;
     }
     return countOfWarning;
   }
 
   bool _validateAssignments(
-      Post post, Map<int, int> forceAssignments, int dateTs) {
+    Post post,
+    Map<int, int> forceAssignments,
+    int dateTs,
+    bool plusplus,
+  ) {
     post.warnings ??= [];
     post.hasError = false;
     if (post.forceId == 0) return false;
@@ -456,7 +525,7 @@ class AppProvider extends ChangeNotifier {
     State? state = getStateById(post.stateId);
     if (force == null || state == null) return false;
     final warnings = post.warnings!;
-    if (warnings.isNotEmpty) warnings.clear();
+    if (plusplus && warnings.isNotEmpty) warnings.clear();
     forceAssignments.update(post.forceId, (value) => value + 1,
         ifAbsent: () => 1);
     if (forceAssignments[post.forceId]! > 1) {
@@ -497,7 +566,6 @@ class AppProvider extends ChangeNotifier {
     if (state.isArmed && !force.canArmed) {
       warnings.add('نمی تواند در پست مسلح باشد.');
     }
-
     if (state.stateType != force.stateType) {
       warnings.add(
           'با مسئولیت ${force.stateType.fa} در مسئولیت ${state.stateType.fa} قرار گرفته است.');
@@ -522,5 +590,61 @@ class AppProvider extends ChangeNotifier {
       default:
         return 0;
     }
+  }
+
+  bool isLightTheme() {
+    return _prefs.getBool('lightTheme') ?? true;
+  }
+
+  Future<void> setThemeStatus(bool light) async {
+    await _prefs.setBool('lightTheme', light);
+  }
+
+  String getPassword() {
+    return _prefs.getString('password') ?? '1234';
+  }
+
+  Future<void> setPassword(String newPassword) async {
+    await _prefs.setString('password', newPassword);
+  }
+
+  double getMultiplierOfTheMonth() {
+    return _prefs.getDouble('multiplierOfTheMonth') ?? 3.75;
+  }
+
+  Future<void> setMultiplierOfTheMonth(double mul) async {
+    await _prefs.setDouble('multiplierOfTheMonth', mul);
+  }
+
+  bool allowFilterMaxUsage() {
+    return _prefs.getBool('allowFilterMaxUsage') ?? true;
+  }
+
+  Future<void> setAllowFilterMaxUsage(bool status) async {
+    await _prefs.setBool('allowFilterMaxUsage', status);
+  }
+
+  bool allowFilterUnitPriority() {
+    return _prefs.getBool('allowFilterUnitPriority') ?? true;
+  }
+
+  Future<void> setAllowFilterUnitPriority(bool status) async {
+    await _prefs.setBool('allowFilterUnitPriority', status);
+  }
+
+  bool showFatherName() {
+    return _prefs.getBool('showFatherName') ?? true;
+  }
+
+  Future<void> setShowFatherName(bool status) async {
+    await _prefs.setBool('showFatherName', status);
+  }
+
+  int totalImportDatabase() {
+    return _prefs.getInt('totalImportDatabase') ?? 0;
+  }
+
+  Future<void> importDatabase() async {
+    await _prefs.setInt('totalImportDatabase', totalImportDatabase() + 1);
   }
 }

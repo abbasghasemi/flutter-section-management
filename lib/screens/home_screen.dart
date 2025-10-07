@@ -9,13 +9,14 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
+import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/screens/forces_screen.dart';
+import 'package:section_management/screens/login_screen.dart';
 import 'package:section_management/screens/posts_screen.dart';
 import 'package:section_management/screens/report_screen.dart';
 import 'package:section_management/screens/settings_screen.dart';
 import 'package:section_management/screens/states_screen.dart';
 import 'package:section_management/screens/units_screen.dart';
-import 'package:section_management/theme.dart';
 import 'package:section_management/utility.dart';
 
 final List<OverlayEntry> _overlay_widgets = [];
@@ -36,67 +37,50 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CupertinoTheme.of(context);
-    final mq = MediaQuery.of(context);
-    bool allow = false;
-    bool startDragging = false;
     return Column(
       children: [
-        GestureDetector(
-          onDoubleTap: () {
-            if (allow) {
-              _overlay_clear();
-              appWindow.maximizeOrRestore();
-            }
-          },
-          onPanDown: (e) {
-            if (e.localPosition.dx >= 44 && e.localPosition.dx <= 44 * 4 ||
-                e.localPosition.dx >= mq.size.width - 40 * 3) {
-              allow = false;
-              return;
-            }
-            startDragging = false;
-            allow = true;
-          },
-          onPanUpdate: (e) {
-            if (!startDragging && allow) {
-              startDragging = true;
-              appWindow.startDragging();
-            }
-          },
-          child: Container(
-            decoration:
-                BoxDecoration(color: DarkTheme.toolbarColor, boxShadow: [
-              BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 2)
-            ]),
-            child: Row(
-              children: [
-                WindowButtons(),
-                Expanded(
-                  child: Text("Section management",
+        Container(
+          decoration: BoxDecoration(
+              color: AppThemeProvider.toolbarColor,
+              boxShadow: [
+                BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 2)
+              ]),
+          child: Row(
+            children: [
+              WindowButtons(),
+              Expanded(
+                child: WindowToolbarController(
+                  child: Text("مدیریت نیروها",
                       textAlign: TextAlign.center,
                       style: theme.textTheme.actionSmallTextStyle),
                 ),
-                WindowsMenuButton(
-                  isMenu: true,
-                  label: 'Help',
-                  onPressed: (_) => _menu_help(context, _),
-                ),
-                WindowsMenuButton(
-                  isMenu: true,
-                  label: 'Tools',
-                  onPressed: (_) => _menu_tools(context, _),
-                ),
-                WindowsMenuButton(
-                  isMenu: true,
-                  label: 'View',
-                  onPressed: (_) => _menu_view(context, _),
-                ),
-                WindowsMenuButton(
-                  isMenu: true,
-                  label: 'File',
-                  onPressed: (_) => _menu_file(context, _),
-                ),
-                Padding(
+              ),
+              WindowsMenuButton(
+                isMenu: true,
+                label: 'Help',
+                hover: AppThemeProvider.light ? Colors.black12 : Colors.white24,
+                onPressed: (_) => _menu_help(context, _),
+              ),
+              WindowsMenuButton(
+                isMenu: true,
+                label: 'Tools',
+                hover: AppThemeProvider.light ? Colors.black12 : Colors.white24,
+                onPressed: (_) => _menu_tools(context, _),
+              ),
+              WindowsMenuButton(
+                isMenu: true,
+                label: 'View',
+                hover: AppThemeProvider.light ? Colors.black12 : Colors.white24,
+                onPressed: (_) => _menu_view(context, _),
+              ),
+              WindowsMenuButton(
+                isMenu: true,
+                label: 'File',
+                hover: AppThemeProvider.light ? Colors.black12 : Colors.white24,
+                onPressed: (_) => _menu_file(context, _),
+              ),
+              WindowToolbarController(
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Image.asset(
                     "assets/img/app_icon.png",
@@ -105,8 +89,8 @@ class HomeScreen extends StatelessWidget {
                     color: theme.primaryColor,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         Expanded(
@@ -114,9 +98,11 @@ class HomeScreen extends StatelessWidget {
         ),
         Container(
           height: 30,
-          decoration: BoxDecoration(color: DarkTheme.toolbarColor, boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)
-          ]),
+          decoration: BoxDecoration(
+              color: AppThemeProvider.toolbarColor,
+              boxShadow: [
+                BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)
+              ]),
           child: Row(
             children: [
               SizedBox(
@@ -129,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                   child: Icon(
                     CupertinoIcons.sidebar_right,
                     size: 16,
-                    color: Colors.white,
+                    color: AppThemeProvider.textTitleColor,
                   ),
                   onPressed: () => _update_view
                       .call(() => _sidebar_opened = !_sidebar_opened),
@@ -140,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                   child: Text(
                     Jalali.now().formatShortDate(),
                     style: theme.textTheme.actionSmallTextStyle
-                        .apply(color: Colors.white),
+                        .apply(color: AppThemeProvider.textTitleColor),
                   ),
                 ),
               ),
@@ -151,9 +137,12 @@ class HomeScreen extends StatelessWidget {
                     top: 2,
                     bottom: 2,
                     left: 3,
+                    // don`t remove
                     child: Text('AG',
                         style: theme.textTheme.actionSmallTextStyle.apply(
-                            color: DarkTheme.toolbarColor, fontSizeDelta: -1)),
+                          color: AppThemeProvider.toolbarColor,
+                          fontSizeDelta: -1,
+                        )),
                   ),
                 ],
               ),
@@ -187,7 +176,7 @@ class HomeScreen extends StatelessWidget {
                   width: 250,
                   height: 90,
                   decoration: BoxDecoration(
-                      color: DarkTheme.toolbarColor,
+                      color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
                       boxShadow: [
                         BoxShadow(
@@ -225,8 +214,9 @@ class HomeScreen extends StatelessWidget {
                           _overlay_clear();
                         },
                       ),
+                      // don`t remove
                       Text(
-                        "Developed by Abbas Ghasemi - 1404",
+                        "Developed by Abbas Ghasemi - 428",
                         style: CupertinoTheme.of(context)
                             .textTheme
                             .actionSmallTextStyle,
@@ -259,10 +249,10 @@ class HomeScreen extends StatelessWidget {
                 top: offset.dy,
                 left: offset.dx,
                 child: Container(
-                  width: 100,
-                  height: 42,
+                  width: 120,
+                  height: 65,
                   decoration: BoxDecoration(
-                      color: DarkTheme.toolbarColor,
+                      color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
                       boxShadow: [
                         BoxShadow(
@@ -277,7 +267,7 @@ class HomeScreen extends StatelessWidget {
                         height: 5,
                       ),
                       WindowsMenuButton(
-                        width: 80,
+                        width: 100,
                         hover: Colors.blueAccent,
                         label: "تقویم",
                         onPressed: (_) {
@@ -290,6 +280,20 @@ class HomeScreen extends StatelessWidget {
                               confirmText: 'بستن',
                               initialEntryMode:
                                   PersianDatePickerEntryMode.calendarOnly);
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 100,
+                        hover: Colors.blueAccent,
+                        label: "محاسبه استحقاق",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return DateCalculatorDialog();
+                            },
+                          );
                         },
                       ),
                     ],
@@ -321,9 +325,9 @@ class HomeScreen extends StatelessWidget {
                 left: offset.dx,
                 child: Container(
                   width: 100,
-                  height: 177,
+                  height: 245,
                   decoration: BoxDecoration(
-                      color: DarkTheme.toolbarColor,
+                      color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
                       boxShadow: [
                         BoxShadow(
@@ -337,6 +341,31 @@ class HomeScreen extends StatelessWidget {
                       SizedBox(
                         height: 5,
                       ),
+                      WindowsMenuButton(
+                        width: 80,
+                        hover: Colors.blueAccent,
+                        label: AppThemeProvider.light ? "حالت شب" : "حالت روز",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          context
+                              .read<AppThemeProvider>()
+                              .change(context.read());
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 80,
+                        hover: Colors.blueAccent,
+                        label: "قفل صفحه",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          Navigator.pushReplacement(
+                            context,
+                            CupertinoPageRoute(
+                                builder: (_) => const LoginScreen()),
+                          );
+                        },
+                      ),
+                      Divider(),
                       WindowsMenuButton(
                         width: 80,
                         hover: Colors.blueAccent,
@@ -440,7 +469,7 @@ class HomeScreen extends StatelessWidget {
                   width: 150,
                   height: 139,
                   decoration: BoxDecoration(
-                      color: DarkTheme.toolbarColor,
+                      color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
                       boxShadow: [
                         BoxShadow(
@@ -496,7 +525,8 @@ class HomeScreen extends StatelessWidget {
                                   child: Text("بارگزاری دیتابیس"),
                                   onPressed: () async {
                                     final app = context.read<AppProvider>();
-                                    final appRestart = context.read<AppRestartProvider>();
+                                    final appRestart =
+                                        context.read<AppRestartProvider>();
                                     Navigator.pop(context);
                                     final result =
                                         await FilePicker.platform.pickFiles(
@@ -512,6 +542,7 @@ class HomeScreen extends StatelessWidget {
                                           File(await _databaseFilePath());
                                       file.writeAsBytesSync(
                                           read.readAsBytesSync());
+                                      app.importDatabase().ignore();
                                       await app.restart();
                                       appRestart.restart();
                                     }
@@ -545,7 +576,8 @@ class HomeScreen extends StatelessWidget {
                                   child: Text("حذف کامل اطلاعات"),
                                   onPressed: () async {
                                     final app = context.read<AppProvider>();
-                                    final appRestart = context.read<AppRestartProvider>();
+                                    final appRestart =
+                                        context.read<AppRestartProvider>();
                                     app.close();
                                     Navigator.pop(context);
                                     final dbPath = await _databaseFilePath();
@@ -614,7 +646,8 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
     return Row(
       children: [
         Container(
-          decoration: BoxDecoration(color: DarkTheme.toolbarColor, boxShadow: [
+          decoration:
+              BoxDecoration(color: AppThemeProvider.toolbarColor, boxShadow: [
             BoxShadow(
                 color: Colors.black12,
                 blurRadius: 5,
@@ -728,7 +761,7 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
                   icon,
                   color: id == _indexed_stack_selected
                       ? activeColor
-                      : Colors.white,
+                      : AppThemeProvider.textTitleColor,
                 ),
                 Text(
                   label,
@@ -736,7 +769,7 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
                       fontSize: 14,
                       color: id == _indexed_stack_selected
                           ? activeColor
-                          : Colors.white),
+                          : AppThemeProvider.textTitleColor),
                 )
               ],
             )
@@ -746,27 +779,45 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
               margin: EdgeInsetsGeometry.only(right: 40),
               child: Icon(
                 icon,
-                color:
-                    id == _indexed_stack_selected ? activeColor : Colors.white,
+                color: id == _indexed_stack_selected
+                    ? activeColor
+                    : AppThemeProvider.textTitleColor,
               ),
             ),
     );
   }
 }
 
-final _buttonColors = WindowButtonColors(
-  iconNormal: Colors.white54,
-  mouseOver: DarkTheme.backgroundColorDeActivated,
-  mouseDown: DarkTheme.backgroundColorDeActivated,
-  iconMouseDown: Colors.white,
-);
+class WindowToolbarController extends StatelessWidget {
+  final Widget child;
 
-final _closeButtonColors = WindowButtonColors(
-  mouseOver: Colors.red,
-  mouseDown: Colors.redAccent,
-  iconNormal: Colors.white54,
-  iconMouseOver: Colors.white,
-);
+  const WindowToolbarController({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    bool allow = false;
+    bool startDragging = false;
+    return GestureDetector(
+      onDoubleTap: () {
+        if (allow) {
+          _overlay_clear();
+          appWindow.maximizeOrRestore();
+        }
+      },
+      onPanDown: (e) {
+        startDragging = false;
+        allow = true;
+      },
+      onPanUpdate: (e) {
+        if (!startDragging && allow) {
+          startDragging = true;
+          appWindow.startDragging();
+        }
+      },
+      child: child,
+    );
+  }
+}
 
 class WindowButtons extends StatefulWidget {
   const WindowButtons({super.key});
@@ -784,6 +835,19 @@ class _WindowButtonsState extends State<WindowButtons> {
 
   @override
   Widget build(BuildContext context) {
+    final _buttonColors = WindowButtonColors(
+      mouseOver: AppThemeProvider.backgroundColorDeActivated,
+      mouseDown: AppThemeProvider.backgroundColorDeActivated,
+      iconNormal: AppThemeProvider.textColor,
+      iconMouseOver: AppThemeProvider.textTitleColor,
+    );
+
+    final _closeButtonColors = WindowButtonColors(
+      mouseOver: Colors.red,
+      mouseDown: Colors.redAccent,
+      iconNormal: AppThemeProvider.textTitleColor,
+      iconMouseOver: Colors.white,
+    );
     return Row(
       children: [
         SizedBox.square(
@@ -836,7 +900,7 @@ class WindowsMenuButton extends StatefulWidget {
     required this.onPressed,
     this.width = 44,
     this.height = 24,
-    this.hover = Colors.white24,
+    required this.hover,
     this.isMenu = false,
   })  : assert(child != null || label != null),
         super(key: key);
@@ -878,11 +942,134 @@ class _WindowsMenuButtonState extends State<WindowsMenuButton> {
                 ? Center(
                     child: Text(
                     widget.label!,
-                    style: theme.textTheme.actionSmallTextStyle
-                        .apply(color: Colors.white, fontSizeDelta: -2),
+                    style: theme.textTheme.actionSmallTextStyle.apply(
+                        color: AppThemeProvider.textTitleColor,
+                        fontSizeDelta: -2),
                   ))
                 : widget.child),
       ),
     );
+  }
+}
+
+class DateCalculatorDialog extends StatefulWidget {
+  @override
+  _DateCalculatorDialogState createState() => _DateCalculatorDialogState();
+}
+
+class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _startDateController = TextEditingController();
+  final _endDateController =
+      TextEditingController(text: Jalali.now().formatCompactDate());
+  String _result = '';
+
+  Jalali? _parseJalaliDate(String dateStr) {
+    try {
+      final parts = dateStr.split('/');
+      if (parts.length != 3) return null;
+      final year = int.tryParse(parts[0]);
+      final month = int.tryParse(parts[1]);
+      final day = int.tryParse(parts[2]);
+      if (year == null || month == null || day == null) return null;
+      return Jalali(year, month, day);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _calculate() {
+    if (_formKey.currentState!.validate()) {
+      final startDate = _parseJalaliDate(_startDateController.text);
+      final endDate = _parseJalaliDate(_endDateController.text);
+
+      if (startDate != null && endDate != null) {
+        if (startDate <= endDate) {
+          final days = endDate.distanceFrom(startDate);
+          final value = (days / 30) *
+              context.read<AppProvider>().getMultiplierOfTheMonth();
+          setState(() {
+            _result = value.toStringAsFixed(2);
+          });
+        } else {
+          setState(() {
+            _result = 'تاریخ شروع باید قبل از تاریخ پایان باشد.';
+          });
+        }
+      } else {
+        setState(() {
+          _result = 'ورودی‌ها نامعتبر هستند.';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoAlertDialog(
+      title: Text('محاسبه‌گر استحقاق'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 16),
+            CupertinoTextFormFieldRow(
+              padding: EdgeInsets.zero,
+              controller: _startDateController,
+              decoration: BoxDecoration(
+                border: Border.all(color: CupertinoColors.systemGrey),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              placeholder: 'تاریخ شروع',
+              keyboardType: TextInputType.datetime,
+              textDirection: TextDirection.rtl,
+              onChanged: (_) => _calculate(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'الزامی است';
+                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                return null;
+              },
+            ),
+            SizedBox(height: 8),
+            CupertinoTextFormFieldRow(
+              padding: EdgeInsets.zero,
+              controller: _endDateController,
+              decoration: BoxDecoration(
+                border: Border.all(color: CupertinoColors.systemGrey),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              placeholder: 'تاریخ پایان',
+              keyboardType: TextInputType.datetime,
+              textDirection: TextDirection.rtl,
+              onChanged: (_) => _calculate(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'الزامی است';
+                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            if (_result.isNotEmpty)
+              Text('استحقاق: $_result', textDirection: TextDirection.rtl),
+          ],
+        ),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          child: Text('بستن'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _startDateController.dispose();
+    _endDateController.dispose();
+    super.dispose();
   }
 }

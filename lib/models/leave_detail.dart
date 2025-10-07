@@ -18,6 +18,8 @@ class LeaveDetail {
     final Enum title;
     if (leaveType == LeaveType.presence) {
       title = PresenceType.values.firstWhere((e) => e.name == titleStr);
+    } else if (leaveType == LeaveType.mission) {
+      title = MissionType.values.firstWhere((e) => e.name == titleStr);
     } else if (leaveType == LeaveType.sick) {
       title = SickType.values.firstWhere((e) => e.name == titleStr);
     } else {

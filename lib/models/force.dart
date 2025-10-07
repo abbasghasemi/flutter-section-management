@@ -9,6 +9,7 @@ class Force {
   final String lastName;
   final String fatherName;
   final bool isNative;
+  final bool isMarried;
   final int endDate;
   final int createdDate;
   final bool canArmed;
@@ -26,6 +27,7 @@ class Force {
     required this.lastName,
     required this.fatherName,
     required this.isNative,
+    required this.isMarried,
     required this.endDate,
     required this.createdDate,
     required this.canArmed,
@@ -44,6 +46,7 @@ class Force {
       lastName: map['last_name'],
       fatherName: map['father_name'],
       isNative: map['is_native'] == 1,
+      isMarried: map['is_married'] == 1,
       endDate: map['end_date'],
       createdDate: map['created_date'],
       canArmed: map['can_armed'] == 1,
@@ -64,6 +67,7 @@ class Force {
       'last_name': lastName,
       'father_name': fatherName,
       'is_native': isNative ? 1 : 0,
+      'is_married': isMarried ? 1 : 0,
       'end_date': endDate,
       'created_date': createdDate,
       'can_armed': canArmed ? 1 : 0,
@@ -95,6 +99,10 @@ class Force {
       changes.add(
           'تغییر بومی بودن از ${oldData.isNative ? 'بومی' : 'غیربومی'} به ${newData.isNative ? 'بومی' : 'غیربومی'}');
     }
+    if (oldData.isMarried != newData.isMarried) {
+      changes.add(
+          'تغییر وضعیت تاهل از ${oldData.isMarried ? 'متاهل' : 'مجرد'} به ${newData.isMarried ? 'متاهل' : 'مجرد'}');
+    }
     if (oldData.endDate != newData.endDate) {
       changes.add(
           'تغییر تاریخ پایان خدمت از ${timestampToShamsi(oldData.endDate)} به ${timestampToShamsi(newData.endDate)}');
@@ -106,11 +114,11 @@ class Force {
     if (oldData.unitId != newData.unitId) {
       final oldUnit = units
           .firstWhere((u) => u.id == oldData.unitId,
-              orElse: () => Unit(id: 0, name: 'نامشخص'))
+              orElse: () => Unit(id: 0, name: 'نامشخص',maxUsage:  0))
           .name;
       final newUnit = units
           .firstWhere((u) => u.id == newData.unitId,
-              orElse: () => Unit(id: 0, name: 'نامشخص'))
+              orElse: () => Unit(id: 0, name: 'نامشخص',maxUsage: 0))
           .name;
       changes.add('تغییر واحد از $oldUnit به $newUnit');
     }

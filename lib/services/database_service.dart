@@ -34,9 +34,9 @@ class DatabaseService {
 
   Future<void> _createDB(Database db) async {
     db.execute(
-        'CREATE TABLE IF NOT EXISTS forces(id INTEGER PRIMARY KEY AUTOINCREMENT, code_meli TEXT UNIQUE NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL, father_name TEXT NOT NULL, is_native INTEGER NOT NULL, end_date INTEGER NOT NULL, created_date INTEGER NOT NULL, can_armed INTEGER NOT NULL, unit_id INTEGER NOT NULL, days_off INTEGER NOT NULL, phone_no INTEGER NOT NULL, state_type TEXT NOT NULL, FOREIGN KEY(unit_id) REFERENCES units(id))');
+        'CREATE TABLE IF NOT EXISTS forces(id INTEGER PRIMARY KEY AUTOINCREMENT, code_meli TEXT UNIQUE NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL, father_name TEXT NOT NULL, is_native INTEGER NOT NULL, is_married INTEGER NOT NULL, end_date INTEGER NOT NULL, created_date INTEGER NOT NULL, can_armed INTEGER NOT NULL, unit_id INTEGER NOT NULL, days_off INTEGER NOT NULL, phone_no INTEGER NOT NULL, state_type TEXT NOT NULL, FOREIGN KEY(unit_id) REFERENCES units(id))');
     db.execute(
-        'CREATE TABLE IF NOT EXISTS units(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)');
+        'CREATE TABLE IF NOT EXISTS units(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, max_usage INTEGER NOT NULL)');
     db.execute(
         'CREATE TABLE IF NOT EXISTS states(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, is_active INTEGER NOT NULL, is_armed INTEGER NOT NULL, state_type TEXT NOT NULL, unit_id INTEGER NOT NULL, FOREIGN KEY(unit_id) REFERENCES units(id))');
     db.execute(
@@ -77,9 +77,9 @@ class DatabaseService {
 
   Future<void> _prePopulateData(Database db) async {
     db.execute(
-        'INSERT OR IGNORE INTO units(id, name) VALUES(?, ?)', ["1", "واحد 1"]);
+        'INSERT OR IGNORE INTO units(id, name, max_usage) VALUES(?, ?, ?)', [1, "واحد 1", -1]);
     db.execute(
-        'INSERT OR IGNORE INTO units(id, name) VALUES(?, ?)', ["2", "واحد 2"]);
+        'INSERT OR IGNORE INTO units(id, name, max_usage) VALUES(?, ?, ?)', [2, "واحد 2", -1]);
   }
 
   int getCountForces() {
@@ -154,13 +154,14 @@ class DatabaseService {
 
   int addForce(Force forceData) {
     db.execute(
-      'INSERT INTO forces(code_meli, first_name, last_name, father_name, is_native, end_date, created_date, can_armed, unit_id, days_off, phone_no, state_type) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ',
+      'INSERT INTO forces(code_meli, first_name, last_name, father_name, is_native,is_married, end_date, created_date, can_armed, unit_id, days_off, phone_no, state_type) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) ',
       [
         forceData.codeMeli,
         forceData.firstName,
         forceData.lastName,
         forceData.fatherName,
         forceData.isNative ? 1 : 0,
+        forceData.isMarried ? 1 : 0,
         forceData.endDate,
         forceData.createdDate,
         forceData.canArmed ? 1 : 0,
@@ -175,13 +176,14 @@ class DatabaseService {
 
   void updateForce(int id, Force forceData) {
     db.execute(
-      'UPDATE forces SET code_meli = ?, first_name = ?, last_name = ?, father_name = ?, is_native = ?, end_date = ?, can_armed = ?, unit_id = ?, days_off = ?, phone_no = ?, state_type = ? WHERE id = ? ',
+      'UPDATE forces SET code_meli = ?, first_name = ?, last_name = ?, father_name = ?, is_native = ?, is_married = ?, end_date = ?, can_armed = ?, unit_id = ?, days_off = ?, phone_no = ?, state_type = ? WHERE id = ? ',
       [
         forceData.codeMeli,
         forceData.firstName,
         forceData.lastName,
         forceData.fatherName,
         forceData.isNative ? 1 : 0,
+        forceData.isMarried ? 1 : 0,
         forceData.endDate,
         forceData.canArmed ? 1 : 0,
         forceData.unitId,
@@ -292,10 +294,10 @@ class DatabaseService {
     return results.map((row) => Note.fromMap(row)).toList();
   }
 
-  int addUnit(String name) {
+  int addUnit(String name, int maxUsage) {
     db.execute(
-      'INSERT INTO units(name) VALUES(?)',
-      [name],
+      'INSERT INTO units(name,max_usage) VALUES(?,?)',
+      [name,maxUsage],
     );
     return db.lastInsertRowId;
   }
@@ -305,10 +307,10 @@ class DatabaseService {
     return results.map((row) => Unit.fromMap(row)).toList();
   }
 
-  void updateUnit(int id, String name) {
+  void updateUnit(int id, String name, int maxUsage) {
     db.execute(
-      'UPDATE units SET name = ? WHERE id = ?',
-      [name, id],
+      'UPDATE units SET name = ?,max_usage = ? WHERE id = ?',
+      [name, id,maxUsage],
     );
   }
 
@@ -452,5 +454,23 @@ class DatabaseService {
       [forceId, dateTs],
     );
     return results.first['last_post_date'] as int?;
+  }
+
+  Future<int> getLastDateLeave(int forceId) async {
+    final results = db.select(
+      'SELECT to_date FROM leaves WHERE force_id = ? AND leave_type IN(?,?,?) ORDER BY to_date DESC LIMIT 1',
+      [forceId, LeaveType.presence.name, LeaveType.sick.name, LeaveType.absent.name],
+    );
+    if (results.isEmpty) return 0;
+    return results.first['to_date'] as int;
+  }
+
+  Future<Post?> getLastPost(int forceId) async {
+    final results = db.select(
+      'SELECT * FROM posts WHERE force_id = ? ORDER BY post_date DESC LIMIT 1',
+      [forceId],
+    );
+    if (results.isEmpty) return null;
+    return Post.fromMap(results.first);
   }
 }
