@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
 import 'package:section_management/providers/app_theme.dart';
+import 'package:section_management/report.dart';
 import 'package:section_management/screens/forces_screen.dart';
 import 'package:section_management/screens/login_screen.dart';
 import 'package:section_management/screens/posts_screen.dart';
@@ -18,6 +19,8 @@ import 'package:section_management/screens/settings_screen.dart';
 import 'package:section_management/screens/states_screen.dart';
 import 'package:section_management/screens/units_screen.dart';
 import 'package:section_management/utility.dart';
+
+import 'checklist_screen.dart';
 
 final List<OverlayEntry> _overlay_widgets = [];
 
@@ -33,6 +36,13 @@ bool _sidebar_opened = false;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  static void goToForceScreen() {
+    if (_indexed_stack_selected == 0) return;
+    _update_view.call(() {
+      _indexed_stack_selected = 0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +121,7 @@ class HomeScreen extends StatelessWidget {
               Tooltip(
                 message: 'سایدبار',
                 child: CupertinoButton(
+                  mouseCursor: SystemMouseCursors.click,
                   padding: EdgeInsetsGeometry.zero,
                   child: Icon(
                     CupertinoIcons.sidebar_right,
@@ -165,7 +176,7 @@ class HomeScreen extends StatelessWidget {
               Positioned.fill(
                 top: offset.dy,
                 child: CupertinoButton(
-                  child: Text(""),
+                  child: Container(),
                   onPressed: () => _overlay_clear(),
                 ),
               ),
@@ -241,7 +252,7 @@ class HomeScreen extends StatelessWidget {
               Positioned.fill(
                 top: offset.dy,
                 child: CupertinoButton(
-                  child: Text(""),
+                  child: Container(),
                   onPressed: () => _overlay_clear(),
                 ),
               ),
@@ -249,8 +260,8 @@ class HomeScreen extends StatelessWidget {
                 top: offset.dy,
                 left: offset.dx,
                 child: Container(
-                  width: 120,
-                  height: 65,
+                  width: 150,
+                  height: 173,
                   decoration: BoxDecoration(
                       color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
@@ -267,7 +278,7 @@ class HomeScreen extends StatelessWidget {
                         height: 5,
                       ),
                       WindowsMenuButton(
-                        width: 100,
+                        width: 130,
                         hover: Colors.blueAccent,
                         label: "تقویم",
                         onPressed: (_) {
@@ -283,7 +294,7 @@ class HomeScreen extends StatelessWidget {
                         },
                       ),
                       WindowsMenuButton(
-                        width: 100,
+                        width: 130,
                         hover: Colors.blueAccent,
                         label: "محاسبه استحقاق",
                         onPressed: (_) {
@@ -291,9 +302,60 @@ class HomeScreen extends StatelessWidget {
                           showCupertinoDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return DateCalculatorDialog();
+                              return DateCalculatorDialog(false);
                             },
                           );
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 130,
+                        hover: Colors.blueAccent,
+                        label: "محاسبه تعداد روز",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return DateCalculatorDialog(true);
+                            },
+                          );
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 130,
+                        hover: Colors.blueAccent,
+                        label: "آمار حضور غیاب",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return DateRangePickerActionDialog(0);
+                            },
+                          );
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 130,
+                        hover: Colors.blueAccent,
+                        label: "آمار تعداد پست",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return DateRangePickerActionDialog(1);
+                            },
+                          );
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 130,
+                        hover: Colors.blueAccent,
+                        label: "آمار کلی نیروهای واحد",
+                        onPressed: (_) {
+                          _overlay_clear();
+                          Report.unitForceInfo(context.read<AppProvider>());
                         },
                       ),
                     ],
@@ -316,7 +378,7 @@ class HomeScreen extends StatelessWidget {
               Positioned.fill(
                 top: offset.dy,
                 child: CupertinoButton(
-                  child: Text(""),
+                  child: Container(),
                   onPressed: () => _overlay_clear(),
                 ),
               ),
@@ -325,7 +387,7 @@ class HomeScreen extends StatelessWidget {
                 left: offset.dx,
                 child: Container(
                   width: 100,
-                  height: 245,
+                  height: 270,
                   decoration: BoxDecoration(
                       color: AppThemeProvider.toolbarColor,
                       borderRadius: BorderRadius.circular(7),
@@ -429,11 +491,23 @@ class HomeScreen extends StatelessWidget {
                       WindowsMenuButton(
                         width: 80,
                         hover: Colors.blueAccent,
-                        label: "تنظیمات",
+                        label: "یادداشت",
                         onPressed: (_) {
                           if (_indexed_stack_selected != 5)
                             _update_view.call(() {
                               _indexed_stack_selected = 5;
+                              _overlay_clear();
+                            });
+                        },
+                      ),
+                      WindowsMenuButton(
+                        width: 80,
+                        hover: Colors.blueAccent,
+                        label: "تنظیمات",
+                        onPressed: (_) {
+                          if (_indexed_stack_selected != 6)
+                            _update_view.call(() {
+                              _indexed_stack_selected = 6;
                               _overlay_clear();
                             });
                         },
@@ -458,7 +532,7 @@ class HomeScreen extends StatelessWidget {
               Positioned.fill(
                 top: offset.dy,
                 child: CupertinoButton(
-                  child: Text(""),
+                  child: Container(),
                   onPressed: () => _overlay_clear(),
                 ),
               ),
@@ -520,38 +594,43 @@ class HomeScreen extends StatelessWidget {
                               title: Text("اخطار"),
                               content: Text("این عمل قابل بازگشت نیست"),
                               actions: [
-                                CupertinoDialogAction(
-                                  isDefaultAction: true,
-                                  child: Text("بارگزاری دیتابیس"),
-                                  onPressed: () async {
-                                    final app = context.read<AppProvider>();
-                                    final appRestart =
-                                        context.read<AppRestartProvider>();
-                                    Navigator.pop(context);
-                                    final result =
-                                        await FilePicker.platform.pickFiles(
-                                      lockParentWindow: true,
-                                      type: FileType.custom,
-                                      allowedExtensions: ['db'],
-                                    );
-                                    if (result != null &&
-                                        result.paths.first != null) {
-                                      final read = File(result.paths.first!);
-                                      app.close();
-                                      final file =
-                                          File(await _databaseFilePath());
-                                      file.writeAsBytesSync(
-                                          read.readAsBytesSync());
-                                      app.importDatabase().ignore();
-                                      await app.restart();
-                                      appRestart.restart();
-                                    }
-                                  },
-                                ),
-                                CupertinoDialogAction(
-                                  child: Text("بستن"),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
+                                MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: CupertinoDialogAction(
+                                      isDefaultAction: true,
+                                      child: Text("بارگزاری دیتابیس"),
+                                      onPressed: () async {
+                                        final app = context.read<AppProvider>();
+                                        final appRestart =
+                                            context.read<AppRestartProvider>();
+                                        Navigator.pop(context);
+                                        final result =
+                                            await FilePicker.platform.pickFiles(
+                                          lockParentWindow: true,
+                                          type: FileType.custom,
+                                          allowedExtensions: ['db'],
+                                        );
+                                        if (result != null &&
+                                            result.paths.first != null) {
+                                          final read =
+                                              File(result.paths.first!);
+                                          app.close();
+                                          final file =
+                                              File(await _databaseFilePath());
+                                          file.writeAsBytesSync(
+                                              read.readAsBytesSync());
+                                          app.importDatabase().ignore();
+                                          await app.restart();
+                                          appRestart.restart();
+                                        }
+                                      },
+                                    )),
+                                MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: CupertinoDialogAction(
+                                      child: Text("بستن"),
+                                      onPressed: () => Navigator.pop(context),
+                                    )),
                               ],
                             ),
                           );
@@ -571,25 +650,30 @@ class HomeScreen extends StatelessWidget {
                               content: Text(
                                   "این عمل قابل بازگشت نیست\nبا حذف اطلاعات برنامه بسته می شود"),
                               actions: [
-                                CupertinoDialogAction(
-                                  isDestructiveAction: true,
-                                  child: Text("حذف کامل اطلاعات"),
-                                  onPressed: () async {
-                                    final app = context.read<AppProvider>();
-                                    final appRestart =
-                                        context.read<AppRestartProvider>();
-                                    app.close();
-                                    Navigator.pop(context);
-                                    final dbPath = await _databaseFilePath();
-                                    File(dbPath).deleteSync();
-                                    await app.restart();
-                                    appRestart.restart();
-                                  },
-                                ),
-                                CupertinoDialogAction(
-                                  child: Text("بستن"),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
+                                MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: CupertinoDialogAction(
+                                      isDestructiveAction: true,
+                                      child: Text("حذف کامل اطلاعات"),
+                                      onPressed: () async {
+                                        final app = context.read<AppProvider>();
+                                        final appRestart =
+                                            context.read<AppRestartProvider>();
+                                        app.close();
+                                        Navigator.pop(context);
+                                        final dbPath =
+                                            await _databaseFilePath();
+                                        File(dbPath).deleteSync();
+                                        await app.restart();
+                                        appRestart.restart();
+                                      },
+                                    )),
+                                MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: CupertinoDialogAction(
+                                      child: Text("بستن"),
+                                      onPressed: () => Navigator.pop(context),
+                                    )),
                               ],
                             ),
                           );
@@ -706,6 +790,11 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
                     ),
                     rightNavigationBarItem(
                       id: 5,
+                      icon: CupertinoIcons.text_bubble,
+                      label: 'یادداشت',
+                    ),
+                    rightNavigationBarItem(
+                      id: 6,
                       icon: CupertinoIcons.gear_alt,
                       label: 'تنظیمات',
                     ),
@@ -723,7 +812,8 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
               navigator(const UnitsScreen()),
               navigator(const StatesScreen()),
               navigator(const PostsScreen()),
-              navigator(const ReportScreen()),
+              navigator(ReportScreen()),
+              navigator(const ChecklistScreen()),
               navigator(const SettingsScreen()),
             ],
           ),
@@ -746,6 +836,7 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
       required String label,
       activeColor = Colors.blue}) {
     return CupertinoButton(
+      mouseCursor: SystemMouseCursors.click,
       onPressed: () {
         if (_indexed_stack_selected != id) {
           setState(() {
@@ -848,35 +939,38 @@ class _WindowButtonsState extends State<WindowButtons> {
       iconNormal: AppThemeProvider.textTitleColor,
       iconMouseOver: Colors.white,
     );
-    return Row(
-      children: [
-        SizedBox.square(
-          dimension: 44,
-          child: CloseWindowButton(
-            colors: _closeButtonColors,
-            onPressed: () {
-              context.read<AppProvider>().close();
-              appWindow.close();
-            },
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 44,
+            child: CloseWindowButton(
+              colors: _closeButtonColors,
+              onPressed: () {
+                context.read<AppProvider>().close();
+                appWindow.close();
+              },
+            ),
           ),
-        ),
-        SizedBox.square(
-          dimension: 44,
-          child: appWindow.isMaximized
-              ? RestoreWindowButton(
-                  colors: _buttonColors,
-                  onPressed: maximizeOrRestore,
-                )
-              : MaximizeWindowButton(
-                  colors: _buttonColors,
-                  onPressed: maximizeOrRestore,
-                ),
-        ),
-        SizedBox.square(
-          dimension: 44,
-          child: MinimizeWindowButton(colors: _buttonColors),
-        ),
-      ],
+          SizedBox.square(
+            dimension: 44,
+            child: appWindow.isMaximized
+                ? RestoreWindowButton(
+                    colors: _buttonColors,
+                    onPressed: maximizeOrRestore,
+                  )
+                : MaximizeWindowButton(
+                    colors: _buttonColors,
+                    onPressed: maximizeOrRestore,
+                  ),
+          ),
+          SizedBox.square(
+            dimension: 44,
+            child: MinimizeWindowButton(colors: _buttonColors),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -913,6 +1007,7 @@ class _WindowsMenuButtonState extends State<WindowsMenuButton> {
   Widget build(BuildContext context) {
     final theme = CupertinoTheme.of(context);
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() {
         _isHovered = true;
         if (widget.isMenu && _overlay_widgets.isNotEmpty) {
@@ -953,6 +1048,9 @@ class _WindowsMenuButtonState extends State<WindowsMenuButton> {
 }
 
 class DateCalculatorDialog extends StatefulWidget {
+  final bool dayCount;
+  DateCalculatorDialog(this.dayCount);
+
   @override
   _DateCalculatorDialogState createState() => _DateCalculatorDialogState();
 }
@@ -986,10 +1084,13 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
       if (startDate != null && endDate != null) {
         if (startDate <= endDate) {
           final days = endDate.distanceFrom(startDate);
-          final value = (days / 30) *
-              context.read<AppProvider>().getMultiplierOfTheMonth();
+          final value = widget.dayCount
+              ? days.toString()
+              : ((days / 30) *
+                      context.read<AppProvider>().getMultiplierOfTheMonth())
+                  .toStringAsFixed(2);
           setState(() {
-            _result = value.toStringAsFixed(2);
+            _result = value;
           });
         } else {
           setState(() {
@@ -1007,7 +1108,7 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
-      title: Text('محاسبه‌گر استحقاق'),
+      title: Text('محاسبه‌گر ' + (widget.dayCount ? 'تعداد روز' : 'استحقاق')),
       content: Form(
         key: _formKey,
         child: Column(
@@ -1051,17 +1152,167 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
             ),
             SizedBox(height: 16),
             if (_result.isNotEmpty)
-              Text('استحقاق: $_result', textDirection: TextDirection.rtl),
+              Text('${widget.dayCount ? 'تعداد روز' : 'استحقاق'}: $_result',
+                  textDirection: TextDirection.rtl),
           ],
         ),
       ),
       actions: [
-        CupertinoDialogAction(
-          child: Text('بستن'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: CupertinoDialogAction(
+              child: Text('بستن'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _startDateController.dispose();
+    _endDateController.dispose();
+    super.dispose();
+  }
+}
+
+class DateRangePickerActionDialog extends StatefulWidget {
+  final int actionType;
+  DateRangePickerActionDialog(this.actionType);
+
+  @override
+  _DateRangePickerActionDialogState createState() =>
+      _DateRangePickerActionDialogState();
+}
+
+class _DateRangePickerActionDialogState
+    extends State<DateRangePickerActionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _startDateController = TextEditingController();
+  final _endDateController =
+      TextEditingController(text: Jalali.now().formatCompactDate());
+  String _result = '';
+
+  Jalali? _parseJalaliDate(String dateStr) {
+    try {
+      final parts = dateStr.split('/');
+      if (parts.length != 3) return null;
+      final year = int.tryParse(parts[0]);
+      final month = int.tryParse(parts[1]);
+      final day = int.tryParse(parts[2]);
+      if (year == null || month == null || day == null) return null;
+      return Jalali(year, month, day);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _calculate() {
+    if (_formKey.currentState!.validate()) {
+      final startDate = _parseJalaliDate(_startDateController.text);
+      final endDate = _parseJalaliDate(_endDateController.text);
+      if (startDate != null && endDate != null) {
+        if (startDate <= endDate) {
+          setState(() {
+            _result = '';
+          });
+        } else {
+          setState(() {
+            _result = 'تاریخ شروع باید قبل از تاریخ پایان باشد.';
+          });
+        }
+      } else {
+        setState(() {
+          _result = 'ورودی‌ها نامعتبر هستند.';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = ["آمار حضور غیاب", "آمار تعداد پست"][widget.actionType];
+    return CupertinoAlertDialog(
+      title: Text(title),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 16),
+            CupertinoTextFormFieldRow(
+              padding: EdgeInsets.zero,
+              controller: _startDateController,
+              decoration: BoxDecoration(
+                border: Border.all(color: CupertinoColors.systemGrey),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              placeholder: 'تاریخ شروع',
+              keyboardType: TextInputType.datetime,
+              textDirection: TextDirection.rtl,
+              onChanged: (_) => _calculate(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'الزامی است';
+                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                return null;
+              },
+            ),
+            SizedBox(height: 8),
+            CupertinoTextFormFieldRow(
+              padding: EdgeInsets.zero,
+              controller: _endDateController,
+              decoration: BoxDecoration(
+                border: Border.all(color: CupertinoColors.systemGrey),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              placeholder: 'تاریخ پایان',
+              keyboardType: TextInputType.datetime,
+              textDirection: TextDirection.rtl,
+              onChanged: (_) => _calculate(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'الزامی است';
+                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            if (_result.isNotEmpty)
+              Text(_result,
+                  style: CupertinoTheme.of(context)
+                      .textTheme
+                      .actionSmallTextStyle
+                      .apply(color: Colors.red),
+                  textDirection: TextDirection.rtl),
+            CupertinoButton.filled(
+                mouseCursor: SystemMouseCursors.click,
+                child: Text("ایجاد گزارش"),
+                onPressed: () {
+                  Jalali startDate =
+                      _parseJalaliDate(_startDateController.text)!;
+                  Jalali endDate = _parseJalaliDate(_endDateController.text)!;
+                  if (widget.actionType == 0) {
+                    Report.presence(
+                        context.read<AppProvider>(), startDate, endDate);
+                  } else if (widget.actionType == 1) {
+                    Report.postCount(
+                        context.read<AppProvider>(), startDate, endDate);
+                  }
+                  Navigator.of(context).pop();
+                })
+          ],
         ),
+      ),
+      actions: [
+        MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: CupertinoDialogAction(
+              child: Text('بستن'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )),
       ],
     );
   }

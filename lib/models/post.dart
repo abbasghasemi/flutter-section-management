@@ -8,6 +8,8 @@ class Post {
   StateType stateType;
   int postNo;
   int postDate;
+  PostStatus postStatus;
+  String postDescription;
   List<String>? warnings = null;
   bool hasError = false;
 
@@ -19,6 +21,8 @@ class Post {
     required this.stateType,
     required this.postNo,
     required this.postDate,
+    required this.postStatus,
+    required this.postDescription,
   });
 
   factory Post.fromMap(Map<String, dynamic> map) {
@@ -29,8 +33,11 @@ class Post {
       stateName: map['state_name'],
       stateType:
           StateType.values.firstWhere((s) => s.name == map['state_type']),
+      postStatus:
+          PostStatus.values.firstWhere((s) => s.name == map['post_status']),
       postNo: map['post_no'],
       postDate: map['post_date'],
+      postDescription: map['post_description'],
     );
   }
 
@@ -43,6 +50,8 @@ class Post {
       'state_type': stateType.name,
       'post_no': postNo,
       'post_date': postDate,
+      'post_status': postStatus.name,
+      'post_description': postDescription,
     };
   }
 }

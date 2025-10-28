@@ -1,12 +1,14 @@
 class Unit {
-  final int? id;
-  final String name;
-  final int maxUsage;
+  int? id;
+  String name;
+  int maxUsage;
+  String description;
 
   Unit({
     this.id,
     required this.name,
     required this.maxUsage,
+    required this.description,
   });
 
   factory Unit.fromMap(Map<String, dynamic> map) {
@@ -14,6 +16,7 @@ class Unit {
       id: map['id'],
       name: map['name'],
       maxUsage: map['max_usage'],
+      description: map['description'],
     );
   }
 
@@ -22,6 +25,7 @@ class Unit {
       'id': id,
       'name': name,
       'max_usage': maxUsage,
+      'description': description,
     };
   }
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:section_management/providers/app_provider.dart';
 
-
 class AppThemeProvider extends ChangeNotifier {
-
   void change(AppProvider appProvider) {
     AppThemeProvider.light = !appProvider.isLightTheme();
     appProvider.setThemeStatus(AppThemeProvider.light);
@@ -16,24 +15,25 @@ class AppThemeProvider extends ChangeNotifier {
     _apply();
     return light
         ? CupertinoThemeData(
-      brightness: Brightness.light,
-      primaryColor: const Color(0xFF1368F4),
-      textTheme: CupertinoTextThemeData(),
-      applyThemeToAll: true,
-    )
+            brightness: Brightness.light,
+            primaryColor: const Color(0xFF1368F4),
+            textTheme: CupertinoTextThemeData().withFont('IRANYekanX'),
+            applyThemeToAll: true,
+          )
         : CupertinoThemeData(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF16202a),
-      barBackgroundColor: const Color(0xFF16202a),
-      primaryColor: const Color(0xFF1368F4),
-      primaryContrastingColor: const Color(0xfff8f8f8),
-      textTheme: CupertinoTextThemeData(),
-      applyThemeToAll: true,
-    );
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF16202a),
+            barBackgroundColor: const Color(0xFF16202a),
+            primaryColor: const Color(0xFF1368F4),
+            primaryContrastingColor: const Color(0xfff8f8f8),
+            textTheme: CupertinoTextThemeData().withFont('IRANYekanX'),
+            applyThemeToAll: true,
+          );
   }
 
   static late Color toolbarColor;
   static late Color backgroundColor;
+  static late Color backgroundSecondaryColor;
   static late Color backgroundColorDeActivated;
   static late Color backgroundColorActivated;
   static late Color textColor;
@@ -43,6 +43,7 @@ class AppThemeProvider extends ChangeNotifier {
     if (light) {
       toolbarColor = const Color(0xfff9faf9);
       backgroundColor = const Color(0xffffffff);
+      backgroundSecondaryColor = Colors.grey.shade50;
       backgroundColorDeActivated = const Color.fromARGB(20, 60, 60, 67);
       backgroundColorActivated = const Color(0xFFF0F7FF);
       textColor = const Color(0xff2e2e2e);
@@ -50,11 +51,32 @@ class AppThemeProvider extends ChangeNotifier {
     } else {
       toolbarColor = const Color(0xff1f2c3a);
       backgroundColor = const Color(0xFF16202a);
+      backgroundSecondaryColor = Colors.black12;
       backgroundColorDeActivated = const Color.fromARGB(45, 60, 60, 67);
       backgroundColorActivated = const Color(0xff10171e);
       textColor = const Color(0xffe4e4e4);
       textTitleColor = const Color(0xffffffff);
     }
   }
+}
 
+extension CupertinoTextThemeExtension on CupertinoTextThemeData {
+  CupertinoTextThemeData withFont(String fontFamily) {
+    TextStyle _applyFont(TextStyle? style, double fontSize) {
+      return style?.copyWith(fontFamily: fontFamily, fontSize: fontSize) ??
+          TextStyle(fontFamily: fontFamily, fontSize: fontSize);
+    }
+
+    return CupertinoTextThemeData(
+      textStyle: _applyFont(textStyle, 17.0),
+      actionTextStyle: _applyFont(actionTextStyle, 17.0),
+      actionSmallTextStyle: _applyFont(actionSmallTextStyle, 15.0),
+      tabLabelTextStyle: _applyFont(tabLabelTextStyle, 10.0),
+      navTitleTextStyle: _applyFont(navTitleTextStyle, 17.0),
+      navLargeTitleTextStyle: _applyFont(navLargeTitleTextStyle, 34.0),
+      navActionTextStyle: _applyFont(navActionTextStyle, 17.0),
+      pickerTextStyle: _applyFont(pickerTextStyle, 21.0),
+      dateTimePickerTextStyle: _applyFont(dateTimePickerTextStyle, 21.0),
+    );
+  }
 }

@@ -6,6 +6,7 @@ enum StateType implements FaName {
   post,
   senior_post,
   driver,
+  storekeeper,
   senior,
   secretary;
 
@@ -13,6 +14,7 @@ enum StateType implements FaName {
         post => 'پستی',
         senior_post => 'پاسبخش',
         driver => 'راننده',
+        storekeeper => 'انباردار',
         senior => 'ارشد',
         secretary => 'منشی',
       };
@@ -20,6 +22,7 @@ enum StateType implements FaName {
 
 enum LeaveType implements FaName {
   presence,
+  hourly,
   sick,
   absent,
   detention,
@@ -27,6 +30,7 @@ enum LeaveType implements FaName {
 
   String get fa => switch (this) {
         presence => 'حضور',
+        hourly => 'ساعتی',
         sick => 'استعلاجی',
         absent => 'غیبت',
         detention => 'بازداشت',
@@ -77,5 +81,25 @@ enum DetentionType implements FaName {
         vacuum => 'خلاء',
         surplus => 'مازاد',
         days_off => 'روزهای استراحت',
+      };
+}
+
+enum HourlyType implements FaName {
+  hour;
+
+  String get fa => switch (this) {
+        hour => 'ساعت',
+      };
+}
+
+enum PostStatus implements FaName {
+  ok,
+  abandoned,
+  cancel;
+
+  String get fa => switch (this) {
+        ok => 'موفق',
+        abandoned => 'ترک شده',
+        cancel => 'لغو شده',
       };
 }

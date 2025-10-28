@@ -68,17 +68,32 @@ class Leave {
       final oldDetail = details[i];
       final newDetail = newLeave.details[i];
       if (oldDetail.title != newDetail.title) {
-        changes.add('تغییر جزئیات از ${oldDetail.fa} به ${newDetail.fa}');
+        changes.add('تغییر عنوان از ${oldDetail.fa} به ${newDetail.fa}');
       }
       if (oldDetail.days != newDetail.days) {
-        changes.add(
-            'تغییر تعداد روزهای ${oldDetail.fa} از ${oldDetail.days} به ${newDetail.days}');
+        if (oldDetail.title is HourlyType) {
+          changes.add(
+              'تغییر تعداد ${oldDetail.fa} از ${oldDetail.days} به ${newDetail.days}');
+        } else {
+          changes.add(
+              'تغییر تعداد روزهای ${oldDetail.fa} از ${oldDetail.days} به ${newDetail.days}');
+        }
       }
     }
     if (details.length > newLeave.details.length) {
       for (int i = newLeave.details.length, j = details.length; i < j; i++) {
         final oldDetail = details[i];
-        changes.add('حذف جزئیات ${oldDetail.fa} و تعداد روز ${oldDetail.days}');
+        changes.add('حذف ${oldDetail.fa} به تعداد روز ${oldDetail.days}');
+      }
+    } else if (details.length < newLeave.details.length) {
+      for (int i = details.length, j = newLeave.details.length; i < j; i++) {
+        final newDetail = newLeave.details[i];
+        if (newDetail.title is HourlyType) {
+          changes.add('اضافه شدن ${newDetail.fa} به تعداد ${newDetail.days}');
+        } else {
+          changes
+              .add('اضافه شدن ${newDetail.fa} به تعداد روز ${newDetail.days}');
+        }
       }
     }
     return changes.join(', ');

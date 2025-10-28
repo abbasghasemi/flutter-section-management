@@ -137,12 +137,15 @@ class PersianMaterialLocalizations extends DefaultMaterialLocalizations {
     return '${jalali.year % 100}/${jalali.month}/${jalali.day}';
   }
 
-
   @override
-  String formatTimeOfDay(TimeOfDay timeOfDay, {bool alwaysUse24HourFormat = false}) {
-    final hour = formatHour(timeOfDay, alwaysUse24HourFormat: alwaysUse24HourFormat);
+  String formatTimeOfDay(TimeOfDay timeOfDay,
+      {bool alwaysUse24HourFormat = false}) {
+    final hour =
+        formatHour(timeOfDay, alwaysUse24HourFormat: alwaysUse24HourFormat);
     final minute = formatMinute(timeOfDay);
-    final period = alwaysUse24HourFormat ? '' : ' ${timeOfDay.period == DayPeriod.am ? anteMeridiemAbbreviation : postMeridiemAbbreviation}';
+    final period = alwaysUse24HourFormat
+        ? ''
+        : ' ${timeOfDay.period == DayPeriod.am ? anteMeridiemAbbreviation : postMeridiemAbbreviation}';
     return '$hour:$minute$period';
   }
 
@@ -247,6 +250,7 @@ class PersianMaterialLocalizations extends DefaultMaterialLocalizations {
   String tabLabel({required int tabIndex, required int tabCount}) {
     return 'تب $tabIndex از $tabCount';
   }
+
   @override
   String get timePickerDialHelpText => 'انتخاب زمان';
 
@@ -269,7 +273,8 @@ class PersianMaterialLocalizations extends DefaultMaterialLocalizations {
   String get viewLicensesButtonLabel => 'مشاهده مجوزها';
 }
 
-class PersianLocalizationsDelegate extends LocalizationsDelegate<MaterialLocalizations> {
+class PersianLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
   const PersianLocalizationsDelegate();
 
   @override

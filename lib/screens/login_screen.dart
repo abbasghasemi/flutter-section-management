@@ -7,7 +7,6 @@ import 'package:section_management/providers/app_theme.dart';
 import 'package:section_management/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-
   const LoginScreen({super.key});
 
   @override
@@ -16,18 +15,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _focus = FocusNode();
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         padding: EdgeInsetsDirectional.zero,
-        leading: CloseWindowButton(
-          colors: WindowButtonColors(
-            mouseOver: Colors.red,
-            mouseDown: Colors.redAccent,
-            iconNormal: AppThemeProvider.textTitleColor,
-            iconMouseOver: Colors.white,
+        leading: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: CloseWindowButton(
+            colors: WindowButtonColors(
+              mouseOver: Colors.red,
+              mouseDown: Colors.redAccent,
+              iconNormal: AppThemeProvider.textTitleColor,
+              iconMouseOver: Colors.white,
+            ),
           ),
         ),
       ),
@@ -42,6 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Form(
                 key: _formKey,
                 child: CupertinoTextFormFieldRow(
+                  focusNode: _focus,
                   autofocus: true,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(3),
@@ -59,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
               CupertinoButton.filled(
+                mouseCursor: SystemMouseCursors.click,
                 child: const Text("ورود"),
                 onPressed: _on_login_btn,
               ),
@@ -75,6 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         CupertinoPageRoute(builder: (_) => const HomeScreen()),
       );
+    } else {
+      _focus.requestFocus();
     }
   }
 }

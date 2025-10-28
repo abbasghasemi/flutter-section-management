@@ -20,6 +20,8 @@ class LeaveDetail {
       title = PresenceType.values.firstWhere((e) => e.name == titleStr);
     } else if (leaveType == LeaveType.mission) {
       title = MissionType.values.firstWhere((e) => e.name == titleStr);
+    } else if (leaveType == LeaveType.hourly) {
+      title = HourlyType.values.firstWhere((e) => e.name == titleStr);
     } else if (leaveType == LeaveType.sick) {
       title = SickType.values.firstWhere((e) => e.name == titleStr);
     } else {

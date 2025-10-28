@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:section_management/models/enums.dart';
 import 'package:section_management/models/state.dart' as model;
-import 'package:section_management/models/unit.dart';
 import 'package:section_management/providers/app_provider.dart';
 import 'package:section_management/providers/app_restart.dart';
 import 'package:section_management/providers/app_theme.dart';
+import 'package:section_management/utility.dart';
 
-class StatesScreen extends StatelessWidget {
+class StatesScreen extends StatefulWidget {
   const StatesScreen({super.key});
 
+  @override
+  State<StatesScreen> createState() => _StatesScreenState();
+}
+
+class _StatesScreenState extends State<StatesScreen> {
   @override
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
@@ -19,6 +24,7 @@ class StatesScreen extends StatelessWidget {
       navigationBar: CupertinoNavigationBar(
         middle: const Text('مکان‌ها'),
         trailing: CupertinoButton(
+          mouseCursor: SystemMouseCursors.click,
           padding: EdgeInsets.zero,
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -41,29 +47,58 @@ class StatesScreen extends StatelessWidget {
                 itemCount: states.length,
                 itemBuilder: (context, index) {
                   final state = states[index];
-                  final unit = appProvider.units.firstWhere(
-                    (u) => u.id == state.unitId,
-                    orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 0),
-                  );
+                  final unit =
+                      appProvider.units.firstWhere((u) => u.id == state.unitId);
                   return CupertinoListTile(
                     backgroundColorActivated:
                         AppThemeProvider.backgroundColorActivated,
                     title: Text('${state.name} (${state.stateType.fa})'),
                     subtitle: Text('${unit.name}'),
                     leadingSize: 20,
-                    leading: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: state.isActive ? Colors.green : Colors.orange),
-                      child: state.isArmed
-                          ? Icon(
-                              CupertinoIcons.arrow_2_circlepath,
-                              color: Colors.white,
-                              size: 17,
-                            )
-                          : null,
+                    leading: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          appProvider.updateState(model.State(
+                            id: state.id,
+                            name: state.name,
+                            isActive: state.isActive,
+                            isArmed: !state.isArmed,
+                            stateType: state.stateType,
+                            unitId: state.unitId,
+                          ));
+                        });
+                      },
+                      onSecondaryTap: () {
+                        setState(() {
+                          appProvider.updateState(model.State(
+                            id: state.id,
+                            name: state.name,
+                            isActive: !state.isActive,
+                            isArmed: state.isArmed,
+                            stateType: state.stateType,
+                            unitId: state.unitId,
+                          ));
+                        });
+                      },
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: state.isActive
+                                  ? Colors.green
+                                  : Colors.orange),
+                          child: state.isArmed
+                              ? Icon(
+                                  CupertinoIcons.arrow_2_circlepath,
+                                  color: Colors.white,
+                                  size: 17,
+                                )
+                              : null,
+                        ),
+                      ),
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -71,6 +106,7 @@ class StatesScreen extends StatelessWidget {
                         Tooltip(
                           message: 'ویرایش',
                           child: CupertinoButton(
+                            mouseCursor: SystemMouseCursors.click,
                             padding: EdgeInsets.zero,
                             child: const Icon(CupertinoIcons.pencil),
                             onPressed: () => Navigator.push(
@@ -85,6 +121,7 @@ class StatesScreen extends StatelessWidget {
                         Tooltip(
                           message: 'حذف',
                           child: CupertinoButton(
+                            mouseCursor: SystemMouseCursors.click,
                             padding: EdgeInsets.zero,
                             child: const Icon(CupertinoIcons.delete),
                             onPressed: () async {
@@ -96,10 +133,13 @@ class StatesScreen extends StatelessWidget {
                                     content: const Text(
                                         'مکان قابل حذف نیست زیرا در لوح پستی استفاده شده است'),
                                     actions: [
-                                      CupertinoDialogAction(
-                                        child: const Text('تأیید'),
-                                        onPressed: () => Navigator.pop(context),
-                                      ),
+                                      MouseRegion(
+                                          cursor: SystemMouseCursors.click,
+                                          child: CupertinoDialogAction(
+                                            child: const Text('تأیید'),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                          )),
                                     ],
                                   ),
                                 );
@@ -112,17 +152,21 @@ class StatesScreen extends StatelessWidget {
                                   content: Text(
                                       'آیا از حذف مکان ${state.name} مطمئن هستید؟'),
                                   actions: [
-                                    CupertinoDialogAction(
-                                      child: const Text('لغو'),
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                    ),
-                                    CupertinoDialogAction(
-                                      isDestructiveAction: true,
-                                      child: const Text('حذف'),
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                    ),
+                                    MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: CupertinoDialogAction(
+                                          child: const Text('لغو'),
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                        )),
+                                    MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: CupertinoDialogAction(
+                                          isDestructiveAction: true,
+                                          child: const Text('حذف'),
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                        )),
                                   ],
                                 ),
                               );
@@ -136,11 +180,13 @@ class StatesScreen extends StatelessWidget {
                                       title: const Text('خطا'),
                                       content: Text(e.toString()),
                                       actions: [
-                                        CupertinoDialogAction(
-                                          child: const Text('تأیید'),
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                        ),
+                                        MouseRegion(
+                                            cursor: SystemMouseCursors.click,
+                                            child: CupertinoDialogAction(
+                                              child: const Text('تأیید'),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                            )),
                                       ],
                                     ),
                                   );
@@ -200,6 +246,9 @@ class _StateFormScreenState extends State<StateFormScreen> {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text(widget.state == null ? 'افزودن مکان' : 'ویرایش مکان'),
+        leading: CupertinoPageBack(
+          previousPageTitle: 'مکان‌ها',
+        ),
       ),
       child: SafeArea(
         child: Form(
@@ -221,25 +270,31 @@ class _StateFormScreenState extends State<StateFormScreen> {
                     value!.isEmpty ? 'نام مکان الزامی است' : null,
               ),
               CupertinoListTile(
-                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: const Text('فعال'),
                 trailing: CupertinoSwitch(
+                  mouseCursor: SwitchWidgetStateProperty(),
                   value: _isActive,
                   onChanged: (value) => setState(() => _isActive = value),
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: const Text('مسلح'),
                 trailing: CupertinoSwitch(
+                  mouseCursor: SwitchWidgetStateProperty(),
                   value: _isArmed,
                   onChanged: (value) => setState(() => _isArmed = value),
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text('مسئولیت: ${_stateType.fa}'),
                 trailing: CupertinoButton(
+                  mouseCursor: SystemMouseCursors.click,
                   child: const Text('انتخاب مسئولیت'),
                   onPressed: () async {
                     final stateType = await showCupertinoModalPopup<StateType>(
@@ -249,11 +304,13 @@ class _StateFormScreenState extends State<StateFormScreen> {
                         actions: StateType.values
                             .take(3)
                             .map((type) => CupertinoActionSheetAction(
+                                  mouseCursor: SystemMouseCursors.click,
                                   child: Text(type.fa),
                                   onPressed: () => Navigator.pop(context, type),
                                 ))
                             .toList(),
                         cancelButton: CupertinoActionSheetAction(
+                          mouseCursor: SystemMouseCursors.click,
                           child: const Text('لغو'),
                           onPressed: () => Navigator.pop(context),
                         ),
@@ -266,10 +323,12 @@ class _StateFormScreenState extends State<StateFormScreen> {
                 ),
               ),
               CupertinoListTile(
-                backgroundColorActivated: AppThemeProvider.backgroundColorActivated,
+                backgroundColorActivated:
+                    AppThemeProvider.backgroundColorActivated,
                 title: Text(
-                    'واحد: ${units.firstWhere((u) => u.id == _unitId, orElse: () => Unit(id: 0, name: 'نامشخص', maxUsage: 0)).name}'),
+                    'واحد: ${units.firstWhere((u) => u.id == _unitId).name}'),
                 trailing: CupertinoButton(
+                  mouseCursor: SystemMouseCursors.click,
                   child: const Text('انتخاب واحد'),
                   onPressed: () async {
                     final unitId = await showCupertinoModalPopup<int>(
@@ -278,12 +337,14 @@ class _StateFormScreenState extends State<StateFormScreen> {
                         title: const Text('انتخاب واحد'),
                         actions: units
                             .map((unit) => CupertinoActionSheetAction(
+                                  mouseCursor: SystemMouseCursors.click,
                                   child: Text(unit.name),
                                   onPressed: () =>
                                       Navigator.pop(context, unit.id),
                                 ))
                             .toList(),
                         cancelButton: CupertinoActionSheetAction(
+                          mouseCursor: SystemMouseCursors.click,
                           child: const Text('لغو'),
                           onPressed: () => Navigator.pop(context),
                         ),
@@ -299,6 +360,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: CupertinoButton.filled(
+                  mouseCursor: SystemMouseCursors.click,
                   child: Text(widget.state == null ? 'افزودن' : 'ذخیره'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
@@ -316,7 +378,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
                         if (widget.state == null) {
                           appProvider.addState(state);
                         } else {
-                          appProvider.updateState(state.id!, state);
+                          appProvider.updateState(state);
                         }
                         Navigator.pop(context);
                       } catch (e) {
@@ -326,10 +388,12 @@ class _StateFormScreenState extends State<StateFormScreen> {
                             title: const Text('خطا'),
                             content: Text(e.toString()),
                             actions: [
-                              CupertinoDialogAction(
-                                child: const Text('تأیید'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
+                              MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: CupertinoDialogAction(
+                                    child: const Text('تأیید'),
+                                    onPressed: () => Navigator.pop(context),
+                                  )),
                             ],
                           ),
                         );
