@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 
-int dateTimestamp() {
-  final datetime = Jalali.now();
+int dateTimestamp([Jalali? jalali = null]) {
+  final datetime = jalali ?? Jalali.now();
   return Jalali(datetime.year, datetime.month, datetime.day)
-      .millisecondsSinceEpoch ~/
+          .millisecondsSinceEpoch ~/
       1000;
 }
 

@@ -94,8 +94,9 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<List<Force>> getForcesByUnitIds(
-      List<int> unitIds, bool inUnitIds) async {
-    return DatabaseService.instance.getForcesByUnitIds(unitIds, inUnitIds);
+      List<int> unitIds, bool inUnitIds, int? presenceTs) async {
+    return DatabaseService.instance
+        .getForcesByUnitIds(unitIds, inUnitIds, presenceTs);
   }
 
   void addForce(Force forceData) {
@@ -115,6 +116,7 @@ class AppProvider extends ChangeNotifier {
       isMarried: newData.isMarried,
       endDate: newData.endDate,
       createdDate: newData.createdDate,
+      deletedDate: null,
       canArmed: newData.canArmed,
       unitId: newData.unitId,
       unitName: _units.firstWhere((e) => e.id == newData.unitId).name,
@@ -141,8 +143,8 @@ class AppProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> getForcesStatus(
       int date, List<int> unitIds, bool inUnitIds) async {
-    final unitForces =
-        await DatabaseService.instance.getForcesByUnitIds(unitIds, inUnitIds);
+    final unitForces = await DatabaseService.instance
+        .getForcesByUnitIds(unitIds, inUnitIds, null);
     final leaves = await DatabaseService.instance
         .getLeavesByDateAndUnits(date, unitIds, inUnitIds);
     final oldLeaves = (await DatabaseService.instance.getLeavesByDateAndUnits(
@@ -565,26 +567,28 @@ class AppProvider extends ChangeNotifier {
     Map<int, int> forceAssignments = {};
     Map<int, int> unitAssignments = {};
     int countOfWarning = 0;
-    for (var post in posts) {
-      bool plusplus = true;
-      if (allowFilterMaxUsage()) {
-        Force? force = getForceById(post.forceId);
-        if (force != null) {
-          unitAssignments.update(force.unitId, (value) => value + 1,
-              ifAbsent: () => 1);
-          final unit = _units.firstWhere((u) => u.id == force.unitId);
-          if (unit.maxUsage >= 0 &&
-              unitAssignments[force.unitId]! > unit.maxUsage) {
-            post.warnings ??= [];
-            if (post.warnings!.isNotEmpty) post.warnings!.clear();
-            post.warnings!.add('بیش از حداکثر استفاده واحد ${unit.name}');
-            countOfWarning++;
-            plusplus = false;
+    if (dateTimestamp() <= dateTs) {
+      for (var post in posts) {
+        bool plusplus = true;
+        if (allowFilterMaxUsage()) {
+          Force? force = getForceById(post.forceId);
+          if (force != null) {
+            unitAssignments.update(force.unitId, (value) => value + 1,
+                ifAbsent: () => 1);
+            final unit = _units.firstWhere((u) => u.id == force.unitId);
+            if (unit.maxUsage >= 0 &&
+                unitAssignments[force.unitId]! > unit.maxUsage) {
+              post.warnings ??= [];
+              if (post.warnings!.isNotEmpty) post.warnings!.clear();
+              post.warnings!.add('بیش از حداکثر استفاده واحد ${unit.name}');
+              countOfWarning++;
+              plusplus = false;
+            }
           }
         }
+        if (_validateAssignments(post, forceAssignments, dateTs, plusplus) &&
+            plusplus) countOfWarning++;
       }
-      if (_validateAssignments(post, forceAssignments, dateTs, plusplus) &&
-          plusplus) countOfWarning++;
     }
     return countOfWarning;
   }

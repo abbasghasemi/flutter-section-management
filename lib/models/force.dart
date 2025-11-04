@@ -13,6 +13,7 @@ class Force {
   final bool isMarried;
   final int endDate;
   final int createdDate;
+  final int? deletedDate;
   final bool canArmed;
   final int unitId;
   final String unitName;
@@ -33,6 +34,7 @@ class Force {
     required this.isMarried,
     required this.endDate,
     required this.createdDate,
+    required this.deletedDate,
     required this.canArmed,
     required this.unitId,
     required this.unitName,
@@ -54,6 +56,7 @@ class Force {
       isMarried: map['is_married'] == 1,
       endDate: map['end_date'],
       createdDate: map['created_date'],
+      deletedDate: map['deleted_date'],
       canArmed: map['can_armed'] == 1,
       unitId: map['unit_id'],
       unitName: map['unit_name'],
@@ -77,6 +80,7 @@ class Force {
       'is_married': isMarried ? 1 : 0,
       'end_date': endDate,
       'created_date': createdDate,
+      'deleted_date': deletedDate,
       'can_armed': canArmed ? 1 : 0,
       'unit_id': unitId,
       'unit_name': unitName,
@@ -122,7 +126,7 @@ class Force {
     }
     if (oldData.endDate != newData.endDate) {
       changes.add(
-          'تغییر تاریخ پایان خدمت از ${timestampToShamsi(oldData.endDate)} به ${timestampToShamsi(newData.endDate)}');
+          'تغییر تاریخ تاریخ تسویه از ${timestampToShamsi(oldData.endDate)} به ${timestampToShamsi(newData.endDate)}');
     }
     if (oldData.canArmed != newData.canArmed) {
       changes.add(
@@ -171,7 +175,7 @@ class Force {
     }
     if (oldData.createdDate != newData.createdDate) {
       changes.add(
-          'تغییر تاریخ اعزام از ${timestampToShamsi(oldData.createdDate)} به ${timestampToShamsi(newData.createdDate)}');
+          'تغییر تاریخ معرفی از ${timestampToShamsi(oldData.createdDate)} به ${timestampToShamsi(newData.createdDate)}');
     }
     return changes.isEmpty ? (update ? '' : null) : changes.join(', ');
   }

@@ -33,42 +33,94 @@ class DatabaseService {
   void close() => db.dispose();
 
   Future<void> _createDB(Database db) async {
+    // todo delete after?
+    db.execute('CREATE TABLE IF NOT EXISTS forces('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'code_meli TEXT UNIQUE NOT NULL,'
+        'code_id TEXT NOT NULL,'
+        'first_name TEXT NOT NULL,'
+        'last_name TEXT NOT NULL,'
+        'father_name TEXT NOT NULL,'
+        'is_native INTEGER NOT NULL,'
+        'is_married INTEGER NOT NULL,'
+        'end_date INTEGER NOT NULL,'
+        'created_date INTEGER NOT NULL,'
+        'deleted_date INTEGER,'
+        'can_armed INTEGER NOT NULL,'
+        'unit_id INTEGER NOT NULL,'
+        'days_off INTEGER NOT NULL,'
+        'work_days INTEGER NOT NULL,'
+        'phone_no INTEGER NOT NULL,'
+        'state_type TEXT NOT NULL,'
+        'FOREIGN KEY(unit_id) REFERENCES units(id)'
+        ')');
+    db.execute('CREATE TABLE IF NOT EXISTS units('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'name TEXT NOT NULL,'
+        'max_usage INTEGER NOT NULL,'
+        'description TEXT NOT NULL'
+        ')');
     db.execute(
-        'CREATE TABLE IF NOT EXISTS forces(id INTEGER PRIMARY KEY AUTOINCREMENT, code_meli TEXT UNIQUE NOT NULL, code_id TEXT NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL, father_name TEXT NOT NULL, is_native INTEGER NOT NULL, is_married INTEGER NOT NULL, end_date INTEGER NOT NULL, created_date INTEGER NOT NULL, can_armed INTEGER NOT NULL, unit_id INTEGER NOT NULL, days_off INTEGER NOT NULL, work_days INTEGER NOT NULL, phone_no INTEGER NOT NULL, state_type TEXT NOT NULL, FOREIGN KEY(unit_id) REFERENCES units(id))');
+        'CREATE TABLE IF NOT EXISTS states(id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'name TEXT NOT NULL,'
+        'is_active INTEGER NOT NULL,'
+        'is_armed INTEGER NOT NULL,'
+        'state_type TEXT NOT NULL,'
+        'unit_id INTEGER NOT NULL,'
+        'FOREIGN KEY(unit_id) REFERENCES units(id)'
+        ')');
     db.execute(
-        'CREATE TABLE IF NOT EXISTS units(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, max_usage INTEGER NOT NULL, description TEXT NOT NULL)');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS states(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, is_active INTEGER NOT NULL, is_armed INTEGER NOT NULL, state_type TEXT NOT NULL, unit_id INTEGER NOT NULL, FOREIGN KEY(unit_id) REFERENCES units(id))');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS leaves(id INTEGER PRIMARY KEY AUTOINCREMENT, force_id INTEGER NOT NULL, from_date INTEGER NOT NULL, to_date INTEGER, leave_type TEXT NOT NULL, details TEXT NOT NULL, FOREIGN KEY(force_id) REFERENCES forces(id))');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS posts(id INTEGER PRIMARY KEY AUTOINCREMENT, force_id INTEGER NOT NULL, state_id INTEGER NOT NULL, state_name TEXT NOT NULL, state_type TEXT NOT NULL, post_no INTEGER NOT NULL, post_date INTEGER NOT NULL, post_status TEXT NOT NULL, post_description TEXT NOT NULL, FOREIGN KEY(force_id) REFERENCES forces(id), FOREIGN KEY(state_id) REFERENCES states(id))');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS posts_doc(id INTEGER PRIMARY KEY AUTOINCREMENT, post_date INTEGER NOT NULL, doc_json TEXT NOT NULL)');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS notes(id INTEGER PRIMARY KEY AUTOINCREMENT, force_id INTEGER NOT NULL, note TEXT NOT NULL, note_date INTEGER NOT NULL, priority INTEGER NOT NULL, FOREIGN KEY(force_id) REFERENCES forces(id))');
-    db.execute(
-        'CREATE TABLE IF NOT EXISTS current_version(id INTEGER PRIMARY KEY AUTOINCREMENT, cv INTEGER NOT NULL)');
+        'CREATE TABLE IF NOT EXISTS leaves(id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'force_id INTEGER NOT NULL,'
+        'from_date INTEGER NOT NULL,'
+        'to_date INTEGER,'
+        'leave_type TEXT NOT NULL,'
+        'details TEXT NOT NULL,'
+        'FOREIGN KEY(force_id) REFERENCES forces(id)'
+        ')');
+    // todo delete after?
+    db.execute('CREATE TABLE IF NOT EXISTS posts('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'force_id INTEGER NOT NULL,'
+        'state_id INTEGER NOT NULL,'
+        'post_no INTEGER NOT NULL,'
+        'post_date INTEGER NOT NULL,'
+        'post_status TEXT NOT NULL,'
+        'post_description TEXT NOT NULL,'
+        'FOREIGN KEY(force_id) REFERENCES forces(id),'
+        'FOREIGN KEY(state_id) REFERENCES states(id)'
+        ')');
+    db.execute('CREATE TABLE IF NOT EXISTS posts_doc('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'post_date INTEGER NOT NULL,'
+        'doc_json TEXT NOT NULL'
+        ')');
+    db.execute('CREATE TABLE IF NOT EXISTS notes('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'force_id INTEGER NOT NULL,'
+        'note TEXT NOT NULL,'
+        'note_date INTEGER NOT NULL,'
+        'priority INTEGER NOT NULL,'
+        'FOREIGN KEY(force_id) REFERENCES forces(id)'
+        ')');
+    db.execute('CREATE TABLE IF NOT EXISTS current_version('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        'cv INTEGER NOT NULL'
+        ')');
+    await _check_version(db);
     await _createIndexes(db);
     await _prePopulateData(db);
-    await _check_version(db);
   }
 
   Future<void> _createIndexes(Database db) async {
     db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_forces_unit_id ON forces(unit_id)');
-    db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_forces_can_armed ON forces(can_armed)');
-    db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_forces_end_date ON forces(end_date)');
+        'CREATE INDEX IF NOT EXISTS idx_forces_deleted_date ON forces(deleted_date)');
     db.execute(
         'CREATE INDEX IF NOT EXISTS idx_leaves_force_id ON leaves(force_id)');
     db.execute(
         'CREATE INDEX IF NOT EXISTS idx_leaves_from_date ON leaves(from_date)');
     db.execute(
         'CREATE INDEX IF NOT EXISTS idx_leaves_to_date ON leaves(to_date)');
-    db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_leaves_leave_type ON leaves(leave_type)');
     db.execute(
         'CREATE INDEX IF NOT EXISTS idx_posts_force_id ON posts(force_id)');
     db.execute(
@@ -95,6 +147,7 @@ class DatabaseService {
     final results = db.select('SELECT cv FROM current_version');
     if (results.isEmpty) {
       try {
+        db.execute("ALTER TABLE forces ADD COLUMN deleted_date INTEGER");
         db.execute(
             "ALTER TABLE forces ADD COLUMN code_id TEXT NOT NULL DEFAULT ''");
         db.execute(
@@ -107,6 +160,8 @@ class DatabaseService {
             "ALTER TABLE units ADD COLUMN description TEXT NOT NULL DEFAULT ''");
         db.execute(
             "ALTER TABLE notes ADD COLUMN priority INTEGER NOT NULL DEFAULT 0");
+        db.execute("ALTER TABLE posts DROP COLUMN state_name");
+        db.execute("ALTER TABLE posts DROP COLUMN state_type");
       } catch (e) {
         //
       }
@@ -122,7 +177,8 @@ class DatabaseService {
   }
 
   int getCountForces() {
-    final results = db.select('SELECT COUNT(*) as total FROM forces');
+    final results = db.select(
+        'SELECT COUNT(*) as total FROM forces WHERE deleted_date IS NULL');
     return results.first['total'] as int;
   }
 
@@ -178,7 +234,7 @@ class DatabaseService {
       }
     }
     final query =
-        'SELECT DISTINCT f.*,u.name as unit_name FROM forces f ${leaveDate != null ? 'LEFT JOIN leaves l ON l.force_id = f.id LEFT JOIN units u ON u.id = f.unit_id' : 'LEFT JOIN units u ON u.id = f.unit_id'} ${conditions.isNotEmpty ? 'WHERE ${conditions.join('AND ')}' : ''} LIMIT ? OFFSET ? ';
+        'SELECT DISTINCT f.*,u.name as unit_name FROM forces f ${leaveDate != null ? 'LEFT JOIN leaves l ON l.force_id = f.id LEFT JOIN units u ON u.id = f.unit_id WHERE f.deleted_date IS NULL' : 'LEFT JOIN units u ON u.id = f.unit_id WHERE f.deleted_date IS NULL'} ${conditions.isNotEmpty ? ' AND ${conditions.join('AND ')}' : ''} LIMIT ? OFFSET ? ';
     params.add(limit == -1 ? null : limit);
     params.add(offset);
     final results = db.select(query, params);
@@ -193,14 +249,27 @@ class DatabaseService {
     return Force.fromMap(results.first);
   }
 
-  Future<List<Force>> getForcesByUnitIds(
-      List<int> unitIds, bool inUnitIds) async {
+  Force? getForceByCodeMeli(String id) {
     final results = db.select(
-        'SELECT forces.*,units.name as unit_name FROM forces LEFT JOIN units ON units.id = forces.unit_id WHERE forces.unit_id ${inUnitIds ? '' : 'NOT '}IN(${unitIds.join(',')})');
+        'SELECT forces.*,units.name as unit_name FROM forces LEFT JOIN units ON units.id = forces.unit_id WHERE forces.code_meli = ?',
+        [id]);
+    if (results.isEmpty) return null;
+    return Force.fromMap(results.first);
+  }
+
+  Future<List<Force>> getForcesByUnitIds(
+      List<int> unitIds, bool inUnitIds, int? presenceTs) async {
+    final results = db.select(
+        'SELECT forces.*,units.name as unit_name FROM forces LEFT JOIN units ON units.id = forces.unit_id WHERE ${presenceTs == null ? 'forces.deleted_date IS NULL' : '(forces.deleted_date IS NULL OR forces.deleted_date > $presenceTs) AND forces.created_date <= $presenceTs'} AND forces.unit_id ${inUnitIds ? '' : 'NOT '}IN(${unitIds.join(',')})');
     return results.map((row) => Force.fromMap(row)).toList();
   }
 
   int addForce(Force forceData) {
+    Force? force = getForceByCodeMeli(forceData.codeMeli);
+    if (force != null && force.deletedDate != null) {
+      updateForce(force.id!, forceData);
+      return force.id!;
+    }
     db.execute(
       'INSERT INTO forces(code_meli, code_id, first_name, last_name, father_name, is_native,is_married, end_date, created_date, can_armed, unit_id, days_off, work_days, phone_no, state_type) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ',
       [
@@ -226,7 +295,7 @@ class DatabaseService {
 
   void updateForce(int id, Force forceData) {
     db.execute(
-      'UPDATE forces SET code_meli = ?, code_id = ?, first_name = ?, last_name = ?, father_name = ?, is_native = ?, is_married = ?, end_date = ?, can_armed = ?, unit_id = ?, days_off = ?, work_days = ?, phone_no = ?, state_type = ? WHERE id = ? ',
+      'UPDATE forces SET code_meli = ?, code_id = ?, first_name = ?, last_name = ?, father_name = ?, is_native = ?, is_married = ?, created_date = ?, deleted_date = ?, end_date = ?, can_armed = ?, unit_id = ?, days_off = ?, work_days = ?, phone_no = ?, state_type = ? WHERE id = ? ',
       [
         forceData.codeMeli,
         forceData.codeId,
@@ -235,6 +304,8 @@ class DatabaseService {
         forceData.fatherName,
         forceData.isNative ? 1 : 0,
         forceData.isMarried ? 1 : 0,
+        forceData.createdDate,
+        forceData.deletedDate,
         forceData.endDate,
         forceData.canArmed ? 1 : 0,
         forceData.unitId,
@@ -248,10 +319,12 @@ class DatabaseService {
   }
 
   void deleteForce(int id) {
-    db.execute('DELETE FROM leaves WHERE force_id = ?', [id]);
-    db.execute('DELETE FROM posts WHERE force_id = ?', [id]);
-    db.execute('DELETE FROM notes WHERE force_id = ?', [id]);
-    db.execute('DELETE FROM forces WHERE id = ?', [id]);
+    // db.execute('DELETE FROM leaves WHERE force_id = ?', [id]);
+    // db.execute('DELETE FROM posts WHERE force_id = ?', [id]);
+    // db.execute('DELETE FROM notes WHERE force_id = ?', [id]);
+    // db.execute('DELETE FROM forces WHERE id = ?', [id]);
+    db.execute('UPDATE forces SET deleted_date = ? WHERE id = ?',
+        [dateTimestamp(), id]);
   }
 
   Future<List<Force>> getPresentForces({
@@ -266,8 +339,8 @@ class DatabaseService {
         : '';
     final params = <dynamic>[LeaveType.hourly.name, date, date];
     final query = unitIds != null
-        ? 'SELECT DISTINCT f.*,u.name as unit_name FROM forces f LEFT JOIN units u ON u.id = f.unit_id WHERE $married f.unit_id IN(${unitIds.join(',')}) AND NOT EXISTS(SELECT 1 FROM leaves l WHERE l.force_id = f.id AND l.leave_type != ? AND l.from_date <= ? AND(l.to_date IS NULL OR l.to_date >= ?)) LIMIT ? OFFSET ? '
-        : 'SELECT DISTINCT f.*,u.name as unit_name FROM forces f LEFT JOIN units u ON u.id = f.unit_id WHERE $married NOT EXISTS(SELECT 1 FROM leaves l WHERE l.force_id = f.id AND l.leave_type != ? AND l.from_date <= ? AND(l.to_date IS NULL OR l.to_date >= ?)) LIMIT ? OFFSET ? ';
+        ? 'SELECT DISTINCT f.*,u.name as unit_name FROM forces f LEFT JOIN units u ON u.id = f.unit_id WHERE f.deleted_date IS NULL AND $married f.unit_id IN(${unitIds.join(',')}) AND NOT EXISTS(SELECT 1 FROM leaves l WHERE l.force_id = f.id AND l.leave_type != ? AND l.from_date <= ? AND(l.to_date IS NULL OR l.to_date >= ?)) LIMIT ? OFFSET ? '
+        : 'SELECT DISTINCT f.*,u.name as unit_name FROM forces f LEFT JOIN units u ON u.id = f.unit_id WHERE f.deleted_date IS NULL AND $married NOT EXISTS(SELECT 1 FROM leaves l WHERE l.force_id = f.id AND l.leave_type != ? AND l.from_date <= ? AND(l.to_date IS NULL OR l.to_date >= ?)) LIMIT ? OFFSET ? ';
     params.add(limit == -1 ? null : limit);
     params.add(offset);
     final results = db.select(query, params);
@@ -283,7 +356,7 @@ class DatabaseService {
   Future<List<Leave>> getLeavesByDateAndUnits(
       int date, List<int> unitIds, bool inUnitIds) async {
     final results = db.select(
-      'SELECT l.* FROM leaves l JOIN forces s ON l.force_id = s.id WHERE s.unit_id ${inUnitIds ? '' : 'NOT '}IN(${unitIds.join(',')}) AND l.leave_type != ? AND(l.to_date IS NULL OR l.to_date >= ?) ORDER BY l.to_date',
+      'SELECT l.* FROM leaves l JOIN forces s ON l.force_id = s.id WHERE s.deleted_date IS NULL AND s.unit_id ${inUnitIds ? '' : 'NOT '}IN(${unitIds.join(',')}) AND l.leave_type != ? AND(l.to_date IS NULL OR l.to_date >= ?) ORDER BY l.to_date',
       [LeaveType.hourly.name, date],
     );
     return results.map((row) => Leave.fromMap(row)).toList();
@@ -412,7 +485,7 @@ class DatabaseService {
         stateData.isArmed ? 1 : 0,
         stateData.stateType.name,
         stateData.unitId,
-        stateData.id!!,
+        stateData.id!,
       ],
     );
   }
@@ -434,12 +507,10 @@ class DatabaseService {
 
   void savePost(Post post) {
     db.execute(
-      'INSERT INTO posts(force_id, state_id, state_name, state_type, post_no, post_date, post_status, post_description) VALUES(?, ?, ?, ?, ?, ?, ?, ?) ',
+      'INSERT INTO posts(force_id, state_id, post_no, post_date, post_status, post_description) VALUES(?, ?, ?, ?, ?, ?) ',
       [
         post.forceId,
         post.stateId,
-        post.stateName,
-        post.stateType.name,
         post.postNo,
         post.postDate,
         post.postStatus.name,
@@ -459,8 +530,9 @@ class DatabaseService {
   }
 
   List<Post> getPostsByDate(int dateTs) {
-    final results =
-        db.select('SELECT * FROM posts WHERE post_date = ?', [dateTs]);
+    final results = db.select(
+        'SELECT posts.*,states.name as state_name,states.state_type FROM posts LEFT JOIN states ON states.id = posts.state_id WHERE post_date = ?',
+        [dateTs]);
     return results.map((row) => Post.fromMap(row)).toList();
   }
 
@@ -481,14 +553,14 @@ class DatabaseService {
 
   Future<List<Post>> getPostsByForceId(int forceId) async {
     final results = db.select(
-        'SELECT * FROM posts WHERE force_id = ? ORDER BY post_date DESC',
+        'SELECT posts.*,states.name as state_name,states.state_type FROM posts LEFT JOIN states ON states.id = posts.state_id WHERE force_id = ? ORDER BY post_date DESC',
         [forceId]);
     return results.map((row) => Post.fromMap(row)).toList();
   }
 
   Future<List<Post>> getRangePostsByTs(int startTs, int endTs) async {
     final results = db.select(
-        'SELECT * FROM posts WHERE post_date BETWEEN ? AND ?',
+        'SELECT posts.*,states.name as state_name,states.state_type FROM posts LEFT JOIN states ON states.id = posts.state_id WHERE post_date BETWEEN ? AND ?',
         [startTs, endTs]);
     return results.map((row) => Post.fromMap(row)).toList();
   }
@@ -530,7 +602,7 @@ class DatabaseService {
 
   Future<Post?> getLastPost(int forceId) async {
     final results = db.select(
-      'SELECT * FROM posts WHERE force_id = ? ORDER BY post_date DESC LIMIT 1',
+      'SELECT posts.*,states.name as state_name,states.state_type FROM posts LEFT JOIN states ON states.id = posts.state_id WHERE force_id = ? ORDER BY post_date DESC LIMIT 1',
       [forceId],
     );
     if (results.isEmpty) return null;

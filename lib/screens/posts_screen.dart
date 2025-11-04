@@ -223,7 +223,7 @@ class _PostsScreenState extends State<PostsScreen> {
                               child: CupertinoDialogAction(
                                 child: Text("تأیید لوح"),
                                 onPressed: () {
-                                 _confirmProposal();
+                                  _confirmProposal();
                                   Navigator.pop(context);
                                 },
                               )),
@@ -298,7 +298,7 @@ class _PostsScreenState extends State<PostsScreen> {
                     lastDate: Jalali.now().add(years: 2),
                   );
                   if (date != null && date != _selectedDateTs) {
-                    _selectedDateTs = date.millisecondsSinceEpoch ~/ 1000;
+                    _selectedDateTs = dateTimestamp(date);
                     await _loadPosts();
                   }
                 },
@@ -1114,41 +1114,33 @@ class _PostsScreenState extends State<PostsScreen> {
                                               },
                                               children: [
                                                 TableRow(children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 21,
-                                                            left: 8.0,
-                                                            right: 8,
-                                                            bottom: 8),
-                                                    child: CupertinoTextField(
-                                                      placeholder:
-                                                          'محل امضای اول',
-                                                      controller:
-                                                          TextEditingController(
-                                                              text: appProvider
-                                                                  .getPostContentText(
-                                                                      12)),
-                                                      onChanged: (name) =>
-                                                          appProvider
-                                                              .setPostContentText(
-                                                                  12, name),
-                                                      style: theme.textTheme
-                                                          .navTitleTextStyle
-                                                          .apply(
-                                                        fontSizeDelta:
-                                                            _fontSizeTitleDelta +
-                                                                2,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 3,
-                                                      decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              width: 0,
-                                                              color: Colors
-                                                                  .transparent)),
+                                                  CupertinoTextField(
+                                                    placeholder:
+                                                        'محل امضای اول',
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: appProvider
+                                                                .getPostContentText(
+                                                                    12)),
+                                                    onChanged: (name) =>
+                                                        appProvider
+                                                            .setPostContentText(
+                                                                12, name),
+                                                    style: theme.textTheme
+                                                        .navTitleTextStyle
+                                                        .apply(
+                                                      fontSizeDelta:
+                                                          _fontSizeTitleDelta +
+                                                              2,
                                                     ),
+                                                    textAlign: TextAlign.center,
+                                                    expands: true,
+                                                    maxLines: null,
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            width: 0,
+                                                            color: Colors
+                                                                .transparent)),
                                                   ),
                                                   CupertinoTextField(
                                                     placeholder:
@@ -1178,41 +1170,33 @@ class _PostsScreenState extends State<PostsScreen> {
                                                             color: Colors
                                                                 .transparent)),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 21,
-                                                            left: 8.0,
-                                                            right: 8,
-                                                            bottom: 8),
-                                                    child: CupertinoTextField(
-                                                      placeholder:
-                                                          'محل امضای دوم',
-                                                      controller:
-                                                          TextEditingController(
-                                                              text: appProvider
-                                                                  .getPostContentText(
-                                                                      14)),
-                                                      onChanged: (name) =>
-                                                          appProvider
-                                                              .setPostContentText(
-                                                                  14, name),
-                                                      style: theme.textTheme
-                                                          .navTitleTextStyle
-                                                          .apply(
-                                                        fontSizeDelta:
-                                                            _fontSizeTitleDelta +
-                                                                2,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 3,
-                                                      decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              width: 0,
-                                                              color: Colors
-                                                                  .transparent)),
+                                                  CupertinoTextField(
+                                                    placeholder:
+                                                        'محل امضای دوم',
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: appProvider
+                                                                .getPostContentText(
+                                                                    14)),
+                                                    onChanged: (name) =>
+                                                        appProvider
+                                                            .setPostContentText(
+                                                                14, name),
+                                                    style: theme.textTheme
+                                                        .navTitleTextStyle
+                                                        .apply(
+                                                      fontSizeDelta:
+                                                          _fontSizeTitleDelta +
+                                                              2,
                                                     ),
+                                                    textAlign: TextAlign.center,
+                                                    expands: true,
+                                                    maxLines: null,
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            width: 0,
+                                                            color: Colors
+                                                                .transparent)),
                                                   ),
                                                 ]),
                                               ],
@@ -1331,6 +1315,19 @@ class _PostsScreenState extends State<PostsScreen> {
       columnWidths: {0: IntrinsicColumnWidth(), ...columnWidth},
       children: tableRows,
     );
+  }
+
+  final Map<String, TextEditingController> _cellController = {};
+  TextEditingController _getCellController(int row, int col, String text) {
+    String key = '$row-$col';
+    if (!_cellController.containsKey(key)) {
+      _cellController[key] = TextEditingController(text: text);
+    } else {
+      if (_cellController[key]!.text != text) {
+        _cellController[key]!.text = text;
+      }
+    }
+    return _cellController[key]!;
   }
 
   List<TableRow> _tableRows(
@@ -1680,7 +1677,7 @@ class _PostsScreenState extends State<PostsScreen> {
                               _countOfWarning = appProvider.validateAssignments(
                                   _posts, _selectedDateTs);
                               if (!_isEdited && _isCreated) {
-                               _confirmProposal();
+                                _confirmProposal();
                               } else {
                                 setState(() {
                                   _isEdited = true;
@@ -1695,8 +1692,14 @@ class _PostsScreenState extends State<PostsScreen> {
                             force == null ? '' : force.unitName,
                             style: theme.textTheme.actionSmallTextStyle,
                           ),
-                    title: print && force == null
+                    title: print
                         ? CupertinoTextField(
+                            controller: _getCellController(
+                                rowIndex,
+                                k,
+                                force != null
+                                    ? '${force.firstName} ${force.lastName}${showFatherName ? ' (${force.fatherName})' : ''}'
+                                    : ''),
                             padding: EdgeInsetsGeometry.zero,
                             style: theme.textTheme.textStyle.apply(
                               color: AppThemeProvider.textTitleColor,
@@ -1799,7 +1802,7 @@ class _PostsScreenState extends State<PostsScreen> {
         .read<AppProvider>()
         .validateAssignments(_posts, _selectedDateTs);
     if (!_isEdited && _isCreated) {
-     _confirmProposal();
+      _confirmProposal();
     } else {
       setState(() {
         _isEdited = true;

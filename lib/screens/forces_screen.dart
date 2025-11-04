@@ -326,7 +326,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                   backgroundColorActivated:
                                       AppThemeProvider.backgroundColorActivated,
                                   title: Text(
-                                    'پایان خدمت: ${endDate == null ? '-' : timestampToShamsi(endDate)}',
+                                    'تاریخ تسویه: ${endDate == null ? '-' : timestampToShamsi(endDate)}',
                                     style: theme.textTheme.actionSmallTextStyle
                                         .apply(
                                             color: AppThemeProvider
@@ -588,7 +588,7 @@ class _ForcesScreenState extends State<ForcesScreen> {
                                           title: Text(
                                               '${force.firstName} ${force.lastName} (${force.fatherName})'),
                                           subtitle: Text(
-                                              'کد ملی: ${force.codeMeli} - پایان خدمت: ${timestampToShamsi(force.endDate)} - ${force.unitName}${force.codeId.isNotEmpty ? ' - کد: ${force.codeId}' : ''}'),
+                                              'کد ملی: ${force.codeMeli} - ${force.unitName}${force.codeId.isNotEmpty ? ' - کد پرونده: ${force.codeId}' : ''}'),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -778,7 +778,8 @@ class ForceDetailScreen extends StatelessWidget {
                   );
                   if (confirmed) {
                     appProvider.deleteForce(force.id!);
-                    Navigator.pop(context);
+                    updateScreen.call();
+                    Navigator.of(context).popUntil((r) => r.isFirst);
                   }
                 },
               ),
@@ -863,7 +864,7 @@ class ForceDetailScreen extends StatelessWidget {
                     backgroundColorActivated:
                         AppThemeProvider.backgroundColorActivated,
                     title: Text(
-                        'تاریخ اعزام: ${timestampToShamsi(force.createdDate)} پایان خدمت: ${timestampToShamsi(force.endDate)}')),
+                        'تاریخ معرفی: ${timestampToShamsi(force.createdDate)} تاریخ تسویه: ${timestampToShamsi(force.endDate)}')),
                 FutureBuilder(
                     future: appProvider.getLastDateLeave(force.id!),
                     builder: (context, snap) {
@@ -1690,7 +1691,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
                           child: alwaysOff
                               ? Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 20.0),
+                                      vertical: 20.0, horizontal: 8),
                                   child: Text('روزهای استراحت: همیشه'),
                                 )
                               : CupertinoTextFormFieldRow(
@@ -1773,7 +1774,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 backgroundColorActivated:
                     AppThemeProvider.backgroundColorActivated,
-                title: Text('تاریخ اعزام: ${timestampToShamsi(_startDate)}'),
+                title: Text('تاریخ معرفی: ${timestampToShamsi(_startDate)}'),
                 trailing: CupertinoButton(
                   mouseCursor: SystemMouseCursors.click,
                   child: const Text('انتخاب تاریخ'),
@@ -1795,7 +1796,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 backgroundColorActivated:
                     AppThemeProvider.backgroundColorActivated,
-                title: Text('پایان خدمت: ${timestampToShamsi(_endDate)}'),
+                title: Text('تاریخ تسویه: ${timestampToShamsi(_endDate)}'),
                 trailing: CupertinoButton(
                   mouseCursor: SystemMouseCursors.click,
                   child: const Text('انتخاب تاریخ'),
@@ -1899,6 +1900,7 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
                         isMarried: _isMarried,
                         endDate: _endDate,
                         createdDate: _startDate,
+                        deletedDate: null,
                         canArmed: _canArmed,
                         unitId: _unitId,
                         daysOff: _alwaysOff.value ? -1 : _daysOff,

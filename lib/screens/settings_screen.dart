@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         key: _formFontSizeName,
                         child: CupertinoTextFormFieldRow(
                           initialValue: provider.fontSizeName().toString(),
-                          prefix: Text("سایز فونت اسامی:"),
+                          prefix: Text("اندازه فونت اسامی:"),
                           maxLength: 2,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly
@@ -239,7 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 int.parse(value) < 22) {
                               return null;
                             }
-                            return 'سایز فونت باید بین 7 تا 21 باشد';
+                            return 'اندازه فونت باید بین 7 تا 21 باشد';
                           },
                         ),
                       ),
@@ -248,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         key: _formFontSizeTitle,
                         child: CupertinoTextFormFieldRow(
                           initialValue: provider.fontSizeTitle().toString(),
-                          prefix: Text("سایز فونت عناوین:"),
+                          prefix: Text("اندازه فونت عناوین:"),
                           maxLength: 2,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly
@@ -266,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 int.parse(value) < 22) {
                               return null;
                             }
-                            return 'سایز فونت باید بین 7 تا 21 باشد';
+                            return 'اندازه فونت باید بین 7 تا 21 باشد';
                           },
                         ),
                       ),
