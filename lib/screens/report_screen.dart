@@ -43,7 +43,7 @@ class ReportScreen extends StatelessWidget {
                   Expanded(
                     child: FutureBuilder<Map<String, dynamic>>(
                       future: appProvider.getForcesStatus(
-                          currentDate, [1, 2], value),
+                          currentDate, appProvider.unitsPost(), value),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -138,7 +138,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );
@@ -184,7 +185,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );
@@ -229,7 +231,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );
@@ -274,7 +277,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );
@@ -320,7 +324,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );
@@ -366,7 +371,8 @@ class ReportScreen extends StatelessWidget {
                                                     '${s.firstName} ${s.lastName} (${s.fatherName})'),
                                                 subtitle: Text(
                                                   'کد ملی: ${s.codeMeli} | از ${timestampToShamsi(leave.fromDate)} '
-                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}',
+                                                  'تا ${leave.toDate != null ? timestampToShamsi(leave.toDate!) : 'نامشخص'}'
+                                                  '${value ? '' : ' | ${s.unitName}'}',
                                                 ),
                                               ),
                                             );

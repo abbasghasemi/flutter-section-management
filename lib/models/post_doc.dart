@@ -4,12 +4,14 @@ class PostDoc {
   final int stateId;
   final StateType stateType;
   final String stateName;
+  final bool isArmed;
   final List<int> forcesId;
 
   PostDoc(
       {required this.stateId,
       required this.stateName,
       required this.stateType,
+      required this.isArmed,
       required this.forcesId});
 
   factory PostDoc.fromMap(Map<String, dynamic> map) {
@@ -18,6 +20,7 @@ class PostDoc {
       stateName: map['state_name'],
       stateType:
           StateType.values.firstWhere((s) => s.name == map['state_type']),
+      isArmed: map['is_armed'] ?? false,
       forcesId: List.castFrom(map['forces_id']),
     );
   }
@@ -27,6 +30,7 @@ class PostDoc {
       'state_id': stateId,
       'state_name': stateName,
       'state_type': stateType.name,
+      'is_armed': isArmed,
       'forces_id': forcesId,
     };
   }

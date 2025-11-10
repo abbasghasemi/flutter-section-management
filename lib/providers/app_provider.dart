@@ -136,8 +136,8 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  void deleteForce(int id) {
-    DatabaseService.instance.deleteForce(id);
+  void deleteForce(int id, int deleteTs) {
+    DatabaseService.instance.deleteForce(id, deleteTs);
     notifyListeners();
   }
 
@@ -148,7 +148,7 @@ class AppProvider extends ChangeNotifier {
     final leaves = await DatabaseService.instance
         .getLeavesByDateAndUnits(date, unitIds, inUnitIds);
     final oldLeaves = (await DatabaseService.instance.getLeavesByDateAndUnits(
-            date - 7 * 24 * 60 * 60, unitIds, inUnitIds))
+            date - reportDayCount() * 24 * 60 * 60, unitIds, inUnitIds))
         .where((l) =>
             l.leaveType != LeaveType.hourly &&
             l.toDate != null &&
@@ -241,10 +241,15 @@ class AppProvider extends ChangeNotifier {
     return DatabaseService.instance.getNotesByForceId(forceId);
   }
 
-  void addUnit(String name, int maxUsage, String description) {
-    final id = DatabaseService.instance.addUnit(name, maxUsage, description);
-    _units.add(
-        Unit(name: name, id: id, maxUsage: maxUsage, description: description));
+  void addUnit(String name, int maxUsage, int unitType, String description) {
+    final id =
+        DatabaseService.instance.addUnit(name, maxUsage, unitType, description);
+    _units.add(Unit(
+        name: name,
+        id: id,
+        maxUsage: maxUsage,
+        unitType: unitType,
+        description: description));
     notifyListeners();
   }
 
@@ -385,6 +390,7 @@ class AppProvider extends ChangeNotifier {
         stateName: state.name,
         stateType: state.stateType,
         forcesId: forcesId,
+        isArmed: state.isArmed,
         stateId: state.id!,
       ));
     }
@@ -544,6 +550,7 @@ class AppProvider extends ChangeNotifier {
         stateName: state.name,
         stateType: state.stateType,
         forcesId: forcesId,
+        isArmed: state.isArmed,
         stateId: state.id!,
       ));
     }
@@ -680,6 +687,10 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
+  List<int> unitsPost() {
+    return _units.where((u) => u.unitType != 0).map((u) => u.id!).toList();
+  }
+
   bool isLightTheme() {
     return _prefs.getBool('lightTheme') ?? true;
   }
@@ -793,5 +804,13 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> setFontSizeTitle(int size) async {
     await _prefs.setInt('fontSizeTitle', size);
+  }
+
+  int reportDayCount() {
+    return _prefs.getInt('reportDayCount') ?? 7;
+  }
+
+  Future<void> setReportDayCount(int count) async {
+    await _prefs.setInt('reportDayCount', count);
   }
 }

@@ -27,8 +27,8 @@ class Report {
     for (int i = 0, j = endDate.distanceFrom(startDate) + 1; i < j; i++) {
       Jalali currentDate = startDate.addDays(i);
       int currentTs = currentDate.millisecondsSinceEpoch ~/ 1000;
-      List<Force> forces =
-          await appProvider.getForcesByUnitIds([1, 2], true, currentTs);
+      List<Force> forces = await appProvider.getForcesByUnitIds(
+          appProvider.unitsPost(), true, currentTs);
       forces.sort((a, b) => a.lastName.compareTo(b.lastName));
       final Worksheet sheet =
           i == 0 ? workbook.worksheets[0] : workbook.worksheets.add();
@@ -51,8 +51,8 @@ class Report {
       sheet.getRangeByName('E1').setText('کد ملی');
       sheet.getRangeByName('F1').setText('نام خانوادگی');
       sheet.getRangeByName('G1').setText('نام');
-      sheet.setRowHeightInPixels(1, 40);
-      sheet.setColumnWidthInPixels(1, 100);
+      sheet.setRowHeightInPixels(1, 50);
+      sheet.setColumnWidthInPixels(1, 110);
       sheet.setColumnWidthInPixels(2, 110);
       sheet.setColumnWidthInPixels(3, 60);
       sheet.setColumnWidthInPixels(4, 90);
@@ -183,49 +183,7 @@ class Report {
   }
 
   static Future<void> unitForceInfo(AppProvider appProvider) async {
-    final List<Force> forces =
-        await appProvider.getForcesByUnitIds([1, 2], true, null);
-    forces.sort((a, b) => a.lastName.compareTo(b.lastName));
-
     final Workbook workbook = Workbook();
-    final Worksheet sheet = workbook.worksheets[0];
-    sheet.name = 'آمار کلی';
-
-    sheet.getRangeByName('A1').setText('نام و نام خانوادگی (نام پدر)');
-    sheet.getRangeByName('B1').setText('کد ملی');
-    sheet.getRangeByName('C1').setText('کد پرونده');
-    sheet.getRangeByName('D1').setText('متاهل');
-    sheet.getRangeByName('E1').setText('بومی');
-    sheet.getRangeByName('F1').setText('مسلح');
-    sheet.getRangeByName('G1').setText('تاریخ معرفی');
-    sheet.getRangeByName('H1').setText('تاریخ تسویه');
-    sheet.getRangeByName('I1').setText('تعداد روز');
-    sheet.getRangeByName('J1').setText('تعداد پست');
-    sheet.getRangeByName('K1').setText('استحقاق');
-    sheet.pageSetup.orientation = ExcelPageOrientation.portrait;
-    sheet.pageSetup.paperSize = ExcelPaperSize.paperA4;
-    sheet.pageSetup.bottomMargin = 0.75;
-    sheet.pageSetup.topMargin = 0.75;
-    sheet.pageSetup.leftMargin = 0.25;
-    sheet.pageSetup.rightMargin = 0.25;
-    sheet.pageSetup.headerMargin = 0;
-    sheet.pageSetup.footerMargin = 0;
-    sheet.pageSetup.isFitToPage = false;
-    sheet.showGridlines = false;
-    sheet.isRightToLeft = true;
-    sheet.setRowHeightInPixels(1, 40);
-    sheet.setColumnWidthInPixels(1, 300);
-    sheet.setColumnWidthInPixels(2, 135);
-    sheet.setColumnWidthInPixels(3, 70);
-    sheet.setColumnWidthInPixels(4, 50);
-    sheet.setColumnWidthInPixels(5, 50);
-    sheet.setColumnWidthInPixels(6, 50);
-    sheet.setColumnWidthInPixels(7, 100);
-    sheet.setColumnWidthInPixels(8, 100);
-    sheet.setColumnWidthInPixels(9, 80);
-    sheet.setColumnWidthInPixels(10, 80);
-    sheet.setColumnWidthInPixels(11, 80);
-
     final globalStyle = workbook.styles.add("globalStyle");
     globalStyle.fontColor = '#000000';
     globalStyle.hAlign = HAlignType.center;
@@ -233,44 +191,90 @@ class Report {
     globalStyle.fontSize = 14;
     globalStyle.fontName = "B Nazanin";
     globalStyle.wrapText = true;
-    final range = sheet.getRangeByIndex(1, 1, forces.length + 1, 11);
-    range.cellStyle = globalStyle;
-    range.cellStyle.borders.all.lineStyle = LineStyle.thin;
-    range.cellStyle.borders.all.color = '#000000';
-    final style = sheet.getRangeByName("A1:K1").cellStyle;
-    style.bold = true;
-    style.fontName = "B Titr";
-    style.backColorRgb = Colors.red.shade100;
+    for (var n = 0; n < 2; n++) {
+      final List<Force> forces = await appProvider.getForcesByUnitIds(
+          appProvider.unitsPost(), n == 0, null);
+      forces.sort((a, b) => a.lastName.compareTo(b.lastName));
+      final Worksheet sheet =
+          n == 0 ? workbook.worksheets[0] : workbook.worksheets.add();
+      sheet.name = n == 0 ? 'آمار کلی' : 'آمار کلی سایر واحدها';
 
-    for (int i = 0; i < forces.length; i++) {
-      Force force = forces[i];
-      final info = await appProvider.getForceInfo(force.id!);
-      final leave = info['lastDateLeave'] == 0
-          ? force.createdDate
-          : info['lastDateLeave']!;
-      final days = Jalali.fromMillisecondsSinceEpoch(leave * 1000)
-          .distanceTo(Jalali.now());
-      final value = (days / 30) * appProvider.getMultiplierOfTheMonth();
-      sheet.setRowHeightInPixels(i + 2, 30);
-      sheet.getRangeByIndex(i + 2, 1).setText(
-          '${force.firstName} ${force.lastName} (${force.fatherName})');
-      sheet.getRangeByIndex(i + 2, 2).setText(force.codeMeli);
-      sheet.getRangeByIndex(i + 2, 3).setText(force.codeId);
-      sheet.getRangeByIndex(i + 2, 4).setText(force.isMarried ? "✅" : "");
-      sheet.getRangeByIndex(i + 2, 5).setText(force.isNative ? '✅' : '');
-      sheet.getRangeByIndex(i + 2, 6).setText(force.canArmed ? '✅' : '');
-      sheet
-          .getRangeByIndex(i + 2, 7)
-          .setText(timestampToShamsi(force.createdDate));
-      sheet.getRangeByIndex(i + 2, 8).setText(timestampToShamsi(force.endDate));
-      sheet.getRangeByIndex(i + 2, 9).setNumber(days.toDouble());
-      sheet
-          .getRangeByIndex(i + 2, 10)
-          .setNumber((info['postsCount'] as int).toDouble());
-      sheet.getRangeByIndex(i + 2, 11).setText(value.toStringAsFixed(2));
-      if (i % 2 == 1) {
-        sheet.getRangeByName("A${i + 2}:K${i + 2}").cellStyle.backColorRgb =
-            Colors.grey.shade200;
+      sheet.getRangeByName('A1').setText('نام و نام خانوادگی (نام پدر)');
+      sheet.getRangeByName('B1').setText('کد ملی');
+      sheet.getRangeByName('C1').setText('کد پرونده');
+      sheet.getRangeByName('D1').setText('متاهل');
+      sheet.getRangeByName('E1').setText('بومی');
+      sheet.getRangeByName('F1').setText('مسلح');
+      sheet.getRangeByName('G1').setText('تاریخ معرفی');
+      sheet.getRangeByName('H1').setText('تاریخ تسویه');
+      sheet.getRangeByName('I1').setText('تعداد روز');
+      sheet.getRangeByName('J1').setText('تعداد پست');
+      sheet.getRangeByName('K1').setText('استحقاق');
+      sheet.pageSetup.orientation = ExcelPageOrientation.portrait;
+      sheet.pageSetup.paperSize = ExcelPaperSize.paperA4;
+      sheet.pageSetup.bottomMargin = 0.75;
+      sheet.pageSetup.topMargin = 0.75;
+      sheet.pageSetup.leftMargin = 0.25;
+      sheet.pageSetup.rightMargin = 0.25;
+      sheet.pageSetup.headerMargin = 0;
+      sheet.pageSetup.footerMargin = 0;
+      sheet.pageSetup.isFitToPage = false;
+      sheet.showGridlines = false;
+      sheet.isRightToLeft = true;
+      sheet.setRowHeightInPixels(1, 40);
+      sheet.setColumnWidthInPixels(1, 300);
+      sheet.setColumnWidthInPixels(2, 135);
+      sheet.setColumnWidthInPixels(3, 70);
+      sheet.setColumnWidthInPixels(4, 50);
+      sheet.setColumnWidthInPixels(5, 50);
+      sheet.setColumnWidthInPixels(6, 50);
+      sheet.setColumnWidthInPixels(7, 110);
+      sheet.setColumnWidthInPixels(8, 110);
+      sheet.setColumnWidthInPixels(9, 80);
+      sheet.setColumnWidthInPixels(10, 80);
+      sheet.setColumnWidthInPixels(11, 80);
+
+      final range = sheet.getRangeByIndex(1, 1, forces.length + 1, 11);
+      range.cellStyle = globalStyle;
+      range.cellStyle.borders.all.lineStyle = LineStyle.thin;
+      range.cellStyle.borders.all.color = '#000000';
+      final style = sheet.getRangeByName("A1:K1").cellStyle;
+      style.bold = true;
+      style.fontName = "B Titr";
+      style.backColorRgb = Colors.red.shade100;
+
+      for (int i = 0; i < forces.length; i++) {
+        Force force = forces[i];
+        final info = await appProvider.getForceInfo(force.id!);
+        final leave = info['lastDateLeave'] == 0
+            ? force.createdDate
+            : info['lastDateLeave']!;
+        final days = Jalali.fromMillisecondsSinceEpoch(leave * 1000)
+            .distanceTo(Jalali.now());
+        final value = (days / 30) * appProvider.getMultiplierOfTheMonth();
+        sheet.setRowHeightInPixels(i + 2, 30);
+        sheet.getRangeByIndex(i + 2, 1).setText(
+            '${force.firstName} ${force.lastName} (${force.fatherName})');
+        sheet.getRangeByIndex(i + 2, 2).setText(force.codeMeli);
+        sheet.getRangeByIndex(i + 2, 3).setText(force.codeId);
+        sheet.getRangeByIndex(i + 2, 4).setText(force.isMarried ? "✅" : "");
+        sheet.getRangeByIndex(i + 2, 5).setText(force.isNative ? '✅' : '');
+        sheet.getRangeByIndex(i + 2, 6).setText(force.canArmed ? '✅' : '');
+        sheet
+            .getRangeByIndex(i + 2, 7)
+            .setText(timestampToShamsi(force.createdDate));
+        sheet
+            .getRangeByIndex(i + 2, 8)
+            .setText(timestampToShamsi(force.endDate));
+        sheet.getRangeByIndex(i + 2, 9).setNumber(days.toDouble());
+        sheet
+            .getRangeByIndex(i + 2, 10)
+            .setNumber((info['postsCount'] as int).toDouble());
+        sheet.getRangeByIndex(i + 2, 11).setText(value.toStringAsFixed(2));
+        if (i % 2 == 1) {
+          sheet.getRangeByName("A${i + 2}:K${i + 2}").cellStyle.backColorRgb =
+              Colors.grey.shade200;
+        }
       }
     }
 

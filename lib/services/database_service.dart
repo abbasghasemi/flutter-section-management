@@ -57,6 +57,7 @@ class DatabaseService {
     db.execute('CREATE TABLE IF NOT EXISTS units('
         'id INTEGER PRIMARY KEY AUTOINCREMENT,'
         'name TEXT NOT NULL,'
+        'unit_type INTEGER NOT NULL,'
         'max_usage INTEGER NOT NULL,'
         'description TEXT NOT NULL'
         ')');
@@ -78,7 +79,6 @@ class DatabaseService {
         'details TEXT NOT NULL,'
         'FOREIGN KEY(force_id) REFERENCES forces(id)'
         ')');
-    // todo delete after?
     db.execute('CREATE TABLE IF NOT EXISTS posts('
         'id INTEGER PRIMARY KEY AUTOINCREMENT,'
         'force_id INTEGER NOT NULL,'
@@ -109,7 +109,6 @@ class DatabaseService {
         ')');
     await _check_version(db);
     await _createIndexes(db);
-    await _prePopulateData(db);
   }
 
   Future<void> _createIndexes(Database db) async {
@@ -131,46 +130,17 @@ class DatabaseService {
         'CREATE INDEX IF NOT EXISTS idx_notes_force_id ON notes(force_id)');
   }
 
-  Future<void> _prePopulateData(Database db) async {
-    db.execute(
-        'INSERT OR IGNORE INTO units(id, name, max_usage, description) VALUES(?, ?, ?, ?)',
-        [0, "موقت", -1, '']);
-    db.execute(
-        'INSERT OR IGNORE INTO units(id, name, max_usage, description) VALUES(?, ?, ?, ?)',
-        [1, "واحد 1", -1, '']);
-    db.execute(
-        'INSERT OR IGNORE INTO units(id, name, max_usage, description) VALUES(?, ?, ?, ?)',
-        [2, "واحد 2", -1, '']);
-  }
-
   Future<void> _check_version(Database db) async {
     final results = db.select('SELECT cv FROM current_version');
     if (results.isEmpty) {
-      try {
-        db.execute("ALTER TABLE forces ADD COLUMN deleted_date INTEGER");
-        db.execute(
-            "ALTER TABLE forces ADD COLUMN code_id TEXT NOT NULL DEFAULT ''");
-        db.execute(
-            "ALTER TABLE forces ADD COLUMN work_days INTEGER NOT NULL DEFAULT 127");
-        db.execute(
-            "ALTER TABLE posts ADD COLUMN post_status TEXT NOT NULL DEFAULT 'ok'");
-        db.execute(
-            "ALTER TABLE posts ADD COLUMN post_description TEXT NOT NULL DEFAULT ''");
-        db.execute(
-            "ALTER TABLE units ADD COLUMN description TEXT NOT NULL DEFAULT ''");
-        db.execute(
-            "ALTER TABLE notes ADD COLUMN priority INTEGER NOT NULL DEFAULT 0");
-        db.execute("ALTER TABLE posts DROP COLUMN state_name");
-        db.execute("ALTER TABLE posts DROP COLUMN state_type");
-      } catch (e) {
-        //
-      }
-      db.execute('INSERT INTO current_version(cv) VALUES(?)', [1]);
+      db.execute('INSERT INTO current_version(cv) VALUES(?)', [2]);
     } else {
       if (results.first['cv'] == 1) {
-        // db.execute("UPDATE current_version SET cv = ?", [2]);
+        db.execute(
+            "ALTER TABLE units ADD COLUMN unit_type INTEGER NOT NULL DEFAULT 0");
+        db.execute("UPDATE current_version SET cv = ?", [2]);
       }
-      if (results.first['cv'] != 1) {
+      if (results.first['cv'] != 2) {
         appWindow.close();
       }
     }
@@ -318,13 +288,13 @@ class DatabaseService {
     );
   }
 
-  void deleteForce(int id) {
+  void deleteForce(int id, int deleteTs) {
     // db.execute('DELETE FROM leaves WHERE force_id = ?', [id]);
     // db.execute('DELETE FROM posts WHERE force_id = ?', [id]);
     // db.execute('DELETE FROM notes WHERE force_id = ?', [id]);
     // db.execute('DELETE FROM forces WHERE id = ?', [id]);
-    db.execute('UPDATE forces SET deleted_date = ? WHERE id = ?',
-        [dateTimestamp(), id]);
+    db.execute(
+        'UPDATE forces SET deleted_date = ? WHERE id = ?', [deleteTs, id]);
   }
 
   Future<List<Force>> getPresentForces({
@@ -415,10 +385,10 @@ class DatabaseService {
     return results.map((row) => Note.fromMap(row)).toList();
   }
 
-  int addUnit(String name, int maxUsage, String description) {
+  int addUnit(String name, int maxUsage, int unitType, String description) {
     db.execute(
-      'INSERT INTO units(name,max_usage,description) VALUES(?,?,?)',
-      [name, maxUsage, description],
+      'INSERT INTO units(name,max_usage,unit_type,description) VALUES(?,?,?,?)',
+      [name, maxUsage, unitType, description],
     );
     return db.lastInsertRowId;
   }
@@ -430,13 +400,12 @@ class DatabaseService {
 
   void updateUnit(Unit unit) {
     db.execute(
-      'UPDATE units SET name = ?,max_usage = ?,description = ? WHERE id = ?',
-      [unit.name, unit.maxUsage, unit.description, unit.id],
+      'UPDATE units SET name = ?,max_usage = ?,unit_type = ?,description = ? WHERE id = ?',
+      [unit.name, unit.maxUsage, unit.unitType, unit.description, unit.id],
     );
   }
 
   bool canDeleteUnit(int id) {
-    if (id == 0 || id == 1 || id == 2) return false;
     final forces = db.select(
         'SELECT EXISTS(SELECT 1 FROM forces WHERE unit_id = ?)',
         [id]).first[0] as int;

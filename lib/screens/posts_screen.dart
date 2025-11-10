@@ -358,15 +358,17 @@ class _PostsScreenState extends State<PostsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _postsTable(
-                    appProvider,
-                    _tableRows(appProvider, theme, false),
-                    false,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _postsTable(
+                      appProvider,
+                      _tableRows(appProvider, theme, false),
+                      false,
+                    ),
+                  ],
+                ),
               ),
             ),
             Container(
@@ -499,6 +501,7 @@ class _PostsScreenState extends State<PostsScreen> {
                                 stateId: state.id!,
                                 stateName: state.name,
                                 stateType: state.stateType,
+                                isArmed: state.isArmed,
                                 forcesId: List.filled(
                                     appProvider.getMaxPosts(state.stateType),
                                     0),
@@ -506,6 +509,9 @@ class _PostsScreenState extends State<PostsScreen> {
                             }
                           });
                         });
+                        if (!_isEdited && _isCreated) {
+                          _confirmProposal();
+                        }
                       }
                     },
                   ),
@@ -585,6 +591,7 @@ class _PostsScreenState extends State<PostsScreen> {
                                         child: Column(
                                           children: [
                                             CupertinoTextField(
+                                              padding: EdgeInsetsGeometry.zero,
                                               placeholder: 'باسمه تعالی',
                                               controller: TextEditingController(
                                                   text: appProvider
@@ -649,9 +656,10 @@ class _PostsScreenState extends State<PostsScreen> {
                                               ],
                                             ),
                                             SizedBox(
-                                              height: 8,
+                                              height: 4,
                                             ),
                                             CupertinoTextField(
+                                              padding: EdgeInsetsGeometry.zero,
                                               placeholder: 'زیر عنوان',
                                               controller: TextEditingController(
                                                   text: appProvider
@@ -662,7 +670,7 @@ class _PostsScreenState extends State<PostsScreen> {
                                                   .textTheme.navTitleTextStyle
                                                   .apply(
                                                 fontSizeDelta:
-                                                    _fontSizeTitleDelta,
+                                                    _fontSizeTitleDelta + 2,
                                               ),
                                               textAlign: TextAlign.center,
                                               maxLines: 1,
@@ -691,6 +699,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                 borderRadius:
                                                     BorderRadius.circular(3),
                                               ),
+                                              defaultVerticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
                                               columnWidths: {
                                                 0: IntrinsicColumnWidth(),
                                                 1: FlexColumnWidth(),
@@ -734,6 +745,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            1, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -783,6 +797,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            2, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -832,6 +849,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            3, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -881,6 +901,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            4, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -932,6 +955,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            5, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -980,6 +1006,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            6, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -1028,6 +1057,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            7, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -1076,6 +1108,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                                                 .transparent)),
                                                   ),
                                                   CupertinoTextField(
+                                                    controller:
+                                                        _getCellController(
+                                                            8, -1, ''),
                                                     padding: EdgeInsetsGeometry
                                                         .symmetric(
                                                             vertical: 12,
@@ -1101,6 +1136,9 @@ class _PostsScreenState extends State<PostsScreen> {
                                               height: 8,
                                             ),
                                             Table(
+                                              defaultVerticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
                                               border: TableBorder.all(
                                                 color: AppThemeProvider
                                                     .textTitleColor,
@@ -1306,6 +1344,7 @@ class _PostsScreenState extends State<PostsScreen> {
     final columnWidth =
         Map.fromIterables(rows, rows.map((_) => FlexColumnWidth()));
     return Table(
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       border: TableBorder.all(
         color: print
             ? AppThemeProvider.textTitleColor
@@ -1323,7 +1362,7 @@ class _PostsScreenState extends State<PostsScreen> {
     if (!_cellController.containsKey(key)) {
       _cellController[key] = TextEditingController(text: text);
     } else {
-      if (_cellController[key]!.text != text) {
+      if (text.isNotEmpty && _cellController[key]!.text != text) {
         _cellController[key]!.text = text;
       }
     }
@@ -1362,35 +1401,32 @@ class _PostsScreenState extends State<PostsScreen> {
         ...List.generate(print ? 12 : _maxColumn, (index) => index)
             .map((index) {
           return Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Text(
-                print
-                    ? [
-                        "10:00-08-00",
-                        "12:00-10-00",
-                        "14:00-12-00",
-                        "16:00-14-00",
-                        "18:00-16-00",
-                        "20:00-18-00",
-                        "22:00-20-00",
-                        "00:00-22-00",
-                        "02:00-00-00",
-                        "04:00-02-00",
-                        "06:00-04-00",
-                        "08:00-06-00",
-                      ][index]
-                    : [
-                        "پاس اول",
-                        "پاس دوم",
-                        "پاس سوم",
-                        "پاس چهارم",
-                        "پاس پنجم",
-                        "پاس ششم",
-                      ][index],
-                style: theme.textTheme.navTitleTextStyle.apply(
-                  fontSizeDelta: print ? _fontSizeTitleDelta : -3,
-                ),
+            child: Text(
+              print
+                  ? [
+                      "10:00-08-00",
+                      "12:00-10-00",
+                      "14:00-12-00",
+                      "16:00-14-00",
+                      "18:00-16-00",
+                      "20:00-18-00",
+                      "22:00-20-00",
+                      "00:00-22-00",
+                      "02:00-00-00",
+                      "04:00-02-00",
+                      "06:00-04-00",
+                      "08:00-06-00",
+                    ][index]
+                  : [
+                      "پاس اول",
+                      "پاس دوم",
+                      "پاس سوم",
+                      "پاس چهارم",
+                      "پاس پنجم",
+                      "پاس ششم",
+                    ][index],
+              style: theme.textTheme.navTitleTextStyle.apply(
+                fontSizeDelta: print ? _fontSizeTitleDelta : -3,
               ),
             ),
           );
@@ -1404,60 +1440,81 @@ class _PostsScreenState extends State<PostsScreen> {
           .toList()
         ..sort((a, b) => a.postNo.compareTo(b.postNo));
       final maxPosts = state.forcesId.length;
-      final childState = CupertinoButton(
-        padding:
-            EdgeInsets.symmetric(vertical: print ? 8 : 20, horizontal: 8.0),
-        mouseCursor:
-            print ? SystemMouseCursors.alias : SystemMouseCursors.click,
-        onPressed: print
-            ? null
-            : () {
-                showCupertinoDialog(
-                  barrierDismissible: true,
-                  context: context,
-                  builder: (context) => CupertinoAlertDialog(
-                    title: Text("حذف ${state.stateName}"),
-                    content: Text("ردیف حذف می گردد"),
-                    actions: [
-                      MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: CupertinoDialogAction(
-                            isDestructiveAction: true,
-                            child: Text("حذف شود"),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              setState(() {
-                                _postsDoc.removeWhere(
-                                    (s) => s.stateId == state.stateId);
-                                _posts.removeWhere(
-                                    (s) => s.stateId == state.stateId);
-                                _states
-                                    .removeWhere((s) => s.id == state.stateId);
-                              });
-                            },
-                          )),
-                      MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: CupertinoDialogAction(
-                            child: Text("بستن"),
-                            onPressed: () => Navigator.pop(context),
-                          )),
-                    ],
-                  ),
-                );
-              },
-        child: Text(
-          state.stateName,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.navTitleTextStyle.apply(
-            fontSizeDelta: print ? _fontSizeTitleDelta : -3,
+      final childState = Stack(
+        children: [
+          if (state.isArmed)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Icon(
+                CupertinoIcons.arrow_2_circlepath,
+                color: AppThemeProvider.textTitleColor,
+                size: 12,
+              ),
+            ),
+          Positioned.fill(
+            child: CupertinoButton(
+              padding: EdgeInsetsGeometry.zero,
+              mouseCursor:
+                  print ? SystemMouseCursors.alias : SystemMouseCursors.click,
+              onPressed: print
+                  ? null
+                  : () {
+                      showCupertinoDialog(
+                        barrierDismissible: true,
+                        context: context,
+                        builder: (context) => CupertinoAlertDialog(
+                          title: Text("حذف ${state.stateName}"),
+                          content: Text("ردیف حذف می گردد"),
+                          actions: [
+                            MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: CupertinoDialogAction(
+                                  isDestructiveAction: true,
+                                  child: Text("حذف شود"),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    setState(() {
+                                      _postsDoc.removeWhere(
+                                          (s) => s.stateId == state.stateId);
+                                      _posts.removeWhere(
+                                          (s) => s.stateId == state.stateId);
+                                      _states.removeWhere(
+                                          (s) => s.id == state.stateId);
+                                    });
+                                    if (!_isEdited && _isCreated) {
+                                      _confirmProposal();
+                                    }
+                                  },
+                                )),
+                            MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: CupertinoDialogAction(
+                                  child: Text("بستن"),
+                                  onPressed: () => Navigator.pop(context),
+                                )),
+                          ],
+                        ),
+                      );
+                    },
+              child: Text(
+                state.stateName,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.navTitleTextStyle.apply(
+                  fontSizeDelta: print ? _fontSizeTitleDelta : -3,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       );
       final rowCells = <Widget>[
-        print
-            ? childState
-            : _buildDraggableState(child: childState, index: rowIndex),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.fill,
+          child: print
+              ? childState
+              : _buildDraggableState(child: childState, index: rowIndex),
+        ),
       ];
       for (int i = 0, j = print ? 12 : _maxColumn; i < j; i++) {
         final int k;
@@ -1470,14 +1527,10 @@ class _PostsScreenState extends State<PostsScreen> {
         }
         if (k >= maxPosts) {
           rowCells.add(Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: 8.0, vertical: print ? 10 : 20),
-              child: Text(
-                '*******',
-                style: theme.textTheme.textStyle.apply(
-                  fontSizeDelta: print ? _fontSizeNameDelta : 0,
-                ),
+            child: Text(
+              '*******',
+              style: theme.textTheme.textStyle.apply(
+                fontSizeDelta: print ? _fontSizeNameDelta : 0,
               ),
             ),
           ));
@@ -1536,6 +1589,8 @@ class _PostsScreenState extends State<PostsScreen> {
                             final availableForces = presentForces
                                 .where((f) => !assignedForceIds.contains(f.id))
                                 .toList();
+                            availableForces
+                                .sort((a, b) => a.unitId.compareTo(b.unitId));
                             String searchQuery = '';
                             final newForceId =
                                 await showCupertinoModalPopup<int>(
@@ -1694,6 +1749,18 @@ class _PostsScreenState extends State<PostsScreen> {
                           ),
                     title: print
                         ? CupertinoTextField(
+                            prefix: state.isArmed &&
+                                    force != null &&
+                                    !force.canArmed
+                                ? Container(
+                                    width: 3,
+                                    height: 3,
+                                    decoration: BoxDecoration(
+                                      color: AppThemeProvider.textTitleColor,
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                  )
+                                : null,
                             controller: _getCellController(
                                 rowIndex,
                                 k,
@@ -1785,7 +1852,7 @@ class _PostsScreenState extends State<PostsScreen> {
           ..warnings?.clear();
       }
     });
-    if (okFromPosts || okToPosts) {
+    if (okFromPosts != okToPosts) {
       _posts.add(Post(
         id: null,
         stateId: _postsDoc[okFromPosts ? toRow : fromRow].stateId,

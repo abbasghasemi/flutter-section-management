@@ -1062,24 +1062,10 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
       TextEditingController(text: Jalali.now().formatCompactDate());
   String _result = '';
 
-  Jalali? _parseJalaliDate(String dateStr) {
-    try {
-      final parts = dateStr.split('/');
-      if (parts.length != 3) return null;
-      final year = int.tryParse(parts[0]);
-      final month = int.tryParse(parts[1]);
-      final day = int.tryParse(parts[2]);
-      if (year == null || month == null || day == null) return null;
-      return Jalali(year, month, day);
-    } catch (e) {
-      return null;
-    }
-  }
-
   void _calculate() {
     if (_formKey.currentState!.validate()) {
-      final startDate = _parseJalaliDate(_startDateController.text);
-      final endDate = _parseJalaliDate(_endDateController.text);
+      final startDate = parseJalaliDate(_startDateController.text);
+      final endDate = parseJalaliDate(_endDateController.text);
 
       if (startDate != null && endDate != null) {
         if (startDate <= endDate) {
@@ -1128,7 +1114,7 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
               onChanged: (_) => _calculate(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'الزامی است';
-                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                if (parseJalaliDate(value) == null) return 'فرمت نامعتبر';
                 return null;
               },
             ),
@@ -1146,7 +1132,7 @@ class _DateCalculatorDialogState extends State<DateCalculatorDialog> {
               onChanged: (_) => _calculate(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'الزامی است';
-                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                if (parseJalaliDate(value) == null) return 'فرمت نامعتبر';
                 return null;
               },
             ),
@@ -1195,24 +1181,10 @@ class _DateRangePickerActionDialogState
       TextEditingController(text: Jalali.now().formatCompactDate());
   String _result = '';
 
-  Jalali? _parseJalaliDate(String dateStr) {
-    try {
-      final parts = dateStr.split('/');
-      if (parts.length != 3) return null;
-      final year = int.tryParse(parts[0]);
-      final month = int.tryParse(parts[1]);
-      final day = int.tryParse(parts[2]);
-      if (year == null || month == null || day == null) return null;
-      return Jalali(year, month, day);
-    } catch (e) {
-      return null;
-    }
-  }
-
   void _calculate() {
     if (_formKey.currentState!.validate()) {
-      final startDate = _parseJalaliDate(_startDateController.text);
-      final endDate = _parseJalaliDate(_endDateController.text);
+      final startDate = parseJalaliDate(_startDateController.text);
+      final endDate = parseJalaliDate(_endDateController.text);
       if (startDate != null && endDate != null) {
         if (startDate <= endDate) {
           setState(() {
@@ -1255,7 +1227,7 @@ class _DateRangePickerActionDialogState
               onChanged: (_) => _calculate(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'الزامی است';
-                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                if (parseJalaliDate(value) == null) return 'فرمت نامعتبر';
                 return null;
               },
             ),
@@ -1273,7 +1245,7 @@ class _DateRangePickerActionDialogState
               onChanged: (_) => _calculate(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'الزامی است';
-                if (_parseJalaliDate(value) == null) return 'فرمت نامعتبر';
+                if (parseJalaliDate(value) == null) return 'فرمت نامعتبر';
                 return null;
               },
             ),
@@ -1290,8 +1262,8 @@ class _DateRangePickerActionDialogState
                 child: Text("ایجاد گزارش"),
                 onPressed: () {
                   Jalali startDate =
-                      _parseJalaliDate(_startDateController.text)!;
-                  Jalali endDate = _parseJalaliDate(_endDateController.text)!;
+                      parseJalaliDate(_startDateController.text)!;
+                  Jalali endDate = parseJalaliDate(_endDateController.text)!;
                   if (widget.actionType == 0) {
                     Report.presence(
                         context.read<AppProvider>(), startDate, endDate);

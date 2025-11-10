@@ -16,6 +16,20 @@ int indexOfWeek(int ts) {
   return Jalali.fromMillisecondsSinceEpoch(ts * 1000).weekDay - 1;
 }
 
+Jalali? parseJalaliDate(String dateStr) {
+  try {
+    final parts = dateStr.split('/');
+    if (parts.length != 3) return null;
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final day = int.tryParse(parts[2]);
+    if (year == null || month == null || day == null) return null;
+    return Jalali(year, month, day);
+  } catch (e) {
+    return null;
+  }
+}
+
 String nameOfWeek(int ts) {
   if (ts > 6) {
     ts = indexOfWeek(ts);

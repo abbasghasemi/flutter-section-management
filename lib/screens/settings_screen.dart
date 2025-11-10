@@ -23,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final GlobalKey<FormState> _formSeniorPostCount = GlobalKey<FormState>();
   final GlobalKey<FormState> _formFontSizeName = GlobalKey<FormState>();
   final GlobalKey<FormState> _formFontSizeTitle = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formReportDayCount = GlobalKey<FormState>();
 
   Future<void> _savePassword(String newPassword) async {
     _passwordController.clear();
@@ -236,10 +237,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           validator: (value) {
                             if (value != null &&
                                 int.parse(value) > 6 &&
-                                int.parse(value) < 22) {
+                                int.parse(value) < 29) {
                               return null;
                             }
-                            return 'اندازه فونت باید بین 7 تا 21 باشد';
+                            return 'اندازه فونت باید بین 7 تا 28 باشد';
                           },
                         ),
                       ),
@@ -263,10 +264,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           validator: (value) {
                             if (value != null &&
                                 int.parse(value) > 6 &&
-                                int.parse(value) < 22) {
+                                int.parse(value) < 29) {
                               return null;
                             }
-                            return 'اندازه فونت باید بین 7 تا 21 باشد';
+                            return 'اندازه فونت باید بین 7 تا 28 باشد';
                           },
                         ),
                       ),
@@ -349,14 +350,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: BoxDecoration(
                         color: AppThemeProvider.backgroundColorDeActivated,
                         borderRadius: BorderRadius.circular(3)),
-                    header: const Text('ضریب استحقاق'),
+                    header: const Text('عمومی'),
                     children: [
                       Form(
                         key: _formMultiplier,
                         child: CupertinoTextFormFieldRow(
                           initialValue:
                               provider.getMultiplierOfTheMonth().toString(),
-                          placeholder: 'ضریب استحقاق',
+                          prefix: Text("ضریب استحقاق:"),
                           maxLength: 4,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r"[0-9.]"))
@@ -370,6 +371,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                           validator: (value) {
                             return double.tryParse(value!) == null
+                                ? 'مقدار نامعتبر'
+                                : null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  CupertinoListSection(
+                    backgroundColor: AppThemeProvider.backgroundColor,
+                    separatorColor: Colors.transparent,
+                    decoration: BoxDecoration(
+                        color: AppThemeProvider.backgroundColorDeActivated,
+                        borderRadius: BorderRadius.circular(3)),
+                    header: const Text('گزارش'),
+                    children: [
+                      Form(
+                        key: _formReportDayCount,
+                        child: CupertinoTextFormFieldRow(
+                          initialValue: provider.reportDayCount().toString(),
+                          prefix: Text("تعداد روز بازگشتی های اخیر:"),
+                          maxLength: 2,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            if (_formReportDayCount.currentState!.validate()) {
+                              final num = int.parse(value);
+                              provider.setReportDayCount(num);
+                            }
+                          },
+                          validator: (value) {
+                            return int.tryParse(value!) == null ||
+                                    value == "0" ||
+                                    value == "00"
                                 ? 'مقدار نامعتبر'
                                 : null;
                           },

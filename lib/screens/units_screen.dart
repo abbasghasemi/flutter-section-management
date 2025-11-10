@@ -44,6 +44,15 @@ class UnitsScreen extends StatelessWidget {
                   return CupertinoListTile(
                     title: Text(unit.name),
                     subtitle: Text(unit.description),
+                    leadingToTitle: 8,
+                    leading: Container(
+                      width: 8,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: unit.unitType == 0 ? Colors.blue : Colors.green,
+                      ),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -167,6 +176,7 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
   late TextEditingController _descriptionController;
   late AppRestartProvider _appRestart;
   late ValueNotifier<bool> _fullCapacity;
+  late ValueNotifier<bool> _unitType;
 
   void _restart() {
     Navigator.of(context).pop();
@@ -186,6 +196,7 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
     }
     _descriptionController =
         TextEditingController(text: widget.unit?.description ?? '');
+    _unitType = ValueNotifier(widget.unit?.unitType == 1);
   }
 
   @override
@@ -209,6 +220,7 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
               CupertinoTextFormFieldRow(
                 controller: _nameController,
                 prefix: Text('نام واحد   '),
+                autofocus: true,
                 decoration: BoxDecoration(
                   border: Border.all(color: CupertinoColors.systemGrey),
                   borderRadius: BorderRadius.circular(3),
@@ -224,7 +236,6 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              const SizedBox(height: 20),
               ValueListenableBuilder(
                   valueListenable: _fullCapacity,
                   builder: (context, alwaysOff, child) {
@@ -275,6 +286,25 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
                       ],
                     );
                   }),
+              ValueListenableBuilder(
+                  valueListenable: _unitType,
+                  builder: (context, value, child) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("واحد پستی"),
+                          CupertinoSwitch(
+                              mouseCursor: SwitchWidgetStateProperty(),
+                              value: _unitType.value,
+                              onChanged: (_) {
+                                _unitType.value = !_unitType.value;
+                              }),
+                        ],
+                      ),
+                    );
+                  }),
               const SizedBox(height: 20),
               CupertinoButton.filled(
                 mouseCursor: SystemMouseCursors.click,
@@ -286,6 +316,7 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
                         appProvider.addUnit(
                             _nameController.text,
                             int.parse(_maxUsageController.text),
+                            _unitType.value ? 1 : 0,
                             _descriptionController.text);
                       } else {
                         final unit = widget.unit!;
@@ -293,6 +324,7 @@ class _UnitFormScreenState extends State<UnitFormScreen> {
                         unit.maxUsage = _fullCapacity.value
                             ? -1
                             : int.parse(_maxUsageController.text);
+                        unit.unitType = _unitType.value ? 1 : 0;
                         unit.description = _descriptionController.text;
                         appProvider.updateUnit(unit);
                       }

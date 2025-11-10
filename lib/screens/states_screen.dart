@@ -261,6 +261,7 @@ class _StateFormScreenState extends State<StateFormScreen> {
               CupertinoTextFormFieldRow(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 controller: _nameController,
+                autofocus: true,
                 prefix: Text('نام مکان '),
                 decoration: BoxDecoration(
                   border: Border.all(color: CupertinoColors.systemGrey),

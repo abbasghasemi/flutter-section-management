@@ -159,13 +159,16 @@ class _ForcesScreenState extends State<ForcesScreen> {
                   Text('جدید'),
                 ],
               ),
-              onPressed: () => Navigator.push(
-                context,
-                CupertinoPageRoute(
-                    builder: (context) => ForceFormScreen(
-                          updateScreen: _restart,
-                        )),
-              ),
+              onPressed: () {
+                if (appProvider.unitsPost().isEmpty) return;
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (context) => ForceFormScreen(
+                            updateScreen: _restart,
+                          )),
+                );
+              },
             ),
           ],
         ),
@@ -750,13 +753,29 @@ class ForceDetailScreen extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 child: const Icon(CupertinoIcons.delete),
                 onPressed: () async {
+                  final controller = TextEditingController(
+                      text: timestampToShamsi(dateTimestamp()));
                   final confirmed = await showCupertinoDialog(
                     barrierDismissible: true,
                     context: context,
                     builder: (context) => CupertinoAlertDialog(
                       title: const Text('حذف نیرو'),
-                      content: Text(
-                          'آیا از حذف ${force.firstName} ${force.lastName} مطمئن هستید؟'),
+                      content: Column(
+                        spacing: 8,
+                        children: [
+                          Text(
+                              'آیا از حذف ${force.firstName} ${force.lastName} مطمئن هستید؟'),
+                          CupertinoTextField(
+                            padding: EdgeInsetsGeometry.symmetric(
+                                horizontal: 8, vertical: 16),
+                            prefix: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Text("تاریخ پایان کار"),
+                            ),
+                            controller: controller,
+                          )
+                        ],
+                      ),
                       actions: [
                         MouseRegion(
                           cursor: SystemMouseCursors.click,
@@ -770,14 +789,20 @@ class ForceDetailScreen extends StatelessWidget {
                           child: CupertinoDialogAction(
                             isDestructiveAction: true,
                             child: const Text('حذف'),
-                            onPressed: () => Navigator.pop(context, true),
+                            onPressed: () {
+                              if (parseJalaliDate(controller.text) == null) {
+                                return;
+                              }
+                              Navigator.pop(context, true);
+                            },
                           ),
                         ),
                       ],
                     ),
                   );
                   if (confirmed) {
-                    appProvider.deleteForce(force.id!);
+                    appProvider.deleteForce(force.id!,
+                        dateTimestamp(parseJalaliDate(controller.text)));
                     updateScreen.call();
                     Navigator.of(context).popUntil((r) => r.isFirst);
                   }
@@ -1570,7 +1595,8 @@ class _ForceFormScreenState extends State<ForceFormScreen> {
     _startDate = widget.force?.createdDate ?? dateTimestamp();
     _endDate = widget.force?.endDate ?? dateTimestamp();
     _canArmed = widget.force?.canArmed ?? true;
-    _unitId = widget.force?.unitId ?? 1;
+    _unitId = widget.force?.unitId ??
+        Provider.of<AppProvider>(context, listen: false).unitsPost().first;
     _daysOff = widget.force?.daysOff ?? 1;
     _alwaysOff = ValueNotifier(_daysOff == -1);
     if (_alwaysOff.value) {
